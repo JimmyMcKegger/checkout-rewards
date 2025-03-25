@@ -1,0 +1,18 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "aa11992737b4b007e86be5fdfc4c6d37"
+application_url = "https://checkout-rewards-app--development.gadget.app/api/shopify/install-or-render"
+embedded = true
+name = "checkout-rewards-app-dev"
+handle = "checkout-rewards-app-dev"
+
+[webhooks]
+api_version = "2025-01"
+
+[auth]
+redirect_urls = [
+  "https://checkout-rewards-app--development.gadget.app/api/connections/auth/shopify/callback"
+]
+
+[pos]
+embedded = false
