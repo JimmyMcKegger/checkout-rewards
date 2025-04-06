@@ -1,59 +1,73 @@
 import {
-  reactExtension,
-  Banner,
-  BlockStack,
-  Checkbox,
-  Text,
-  useApi,
-  useApplyAttributeChange,
-  useInstructions,
-  useTranslate,
+	reactExtension,
+	Banner,
+	BlockStack,
+	Checkbox,
+	Text,
+	useApi,
+	useCustomer,
+	useExtension,
+	useSession,
+	useApplyAttributeChange,
+	useInstructions,
+	useTranslate,
 } from "@shopify/ui-extensions-react/checkout";
 
-// 1. Choose an extension target
-export default reactExtension("purchase.checkout.block.render", () => (
-  <Extension />
-));
+
+// Choose an extension target
+const target = "purchase.checkout.reductions.render-after";
+
+export default reactExtension(target, () => <Extension />);
 
 function Extension() {
-  const translate = useTranslate();
-  const { extension } = useApi();
-  const instructions = useInstructions();
-  const applyAttributeChange = useApplyAttributeChange();
+	const translate = useTranslate();
+	const { extension } = useApi();
+  console.log("extension", extension);
+	const instructions = useInstructions();
+  console.log("instructions", instructions);
+	const applyAttributeChange = useApplyAttributeChange();
 
+	// get the customer with useCustomer()
+	const customer = useCustomer();
 
-  // 2. Check instructions for feature availability, see https://shopify.dev/docs/api/checkout-ui-extensions/apis/cart-instructions for details
-  if (!instructions.attributes.canUpdateAttributes) {
-    // For checkouts such as draft order invoices, cart attributes may not be allowed
-    // Consider rendering a fallback UI or nothing at all, if the feature is unavailable
-    return (
-      <Banner title="checkout-rewards-ui" status="warning">
-        {translate("attributeChangesAreNotSupported")}
-      </Banner>
-    );
-  }
+	// if no customer
+	if (!customer) {
+		console.log("No customer");
+		return (
+			<Banner title={translate("welcome")} status="info">
+				<Text size="medium">
+					{/* If you are a returning customer, please log in to see your rewards */}
+					{translate("notLoggedIn")}
+				</Text>
+			</Banner>
+		);
+	}
+	// customer logged in
+	else {
+		console.log("Customer", customer);
+		const name = customer.firstName || customer.lastName || customer.email;
+		const welcomMessage = `${translate("welcomeBackMessage")}, ${name}!`;
 
-  // 3. Render a UI
-  return (
-    <BlockStack border={"dotted"} padding={"tight"}>
-      <Banner title="checkout-rewards-ui">
-        {translate("welcome", {
-          target: <Text emphasis="italic">{extension.target}</Text>,
-        })}
-      </Banner>
-      <Checkbox onChange={onCheckboxChange}>
-        {translate("iWouldLikeAFreeGiftWithMyOrder")}
-      </Checkbox>
-    </BlockStack>
-  );
+		return (
+			<BlockStack border={"dotted"} padding={"tight"}>
+				<Banner title="Checkout Rewards">
+        <Text>{welcomMessage}</Text>
+				</Banner>
+				{/* apply available discounts? */}
+				<Checkbox onChange={onCheckboxChange}>
+					{translate("welcomeBackMessage")}
+				</Checkbox>
+			</BlockStack>
+		);
+	}
+}
 
-  async function onCheckboxChange(isChecked) {
-    // 4. Call the API to modify checkout
-    const result = await applyAttributeChange({
-      key: "requestedFreeGift",
-      type: "updateAttribute",
-      value: isChecked ? "yes" : "no",
-    });
-    console.log("applyAttributeChange result", result);
-  }
+// manage checkout discount application
+async function onCheckboxChange(isChecked) {
+	const result = await applyAttributeChange({
+		key: "appliedDiscount",
+		type: "updateAttribute",
+		value: isChecked ? "yes" : "no",
+	});
+	console.log("applyAttributeChange result", result);
 }

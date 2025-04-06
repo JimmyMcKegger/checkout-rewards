@@ -1,5 +1,5 @@
 {
-  "welcome": "Bienvenue dans l'extension {{target}}!",
-  "iWouldLikeAFreeGiftWithMyOrder": "Je souhaite recevoir un cadeau gratuit avec ma commande",
-  "attributeChangesAreNotSupported": "Les modifications d'attribut ne sont pas prises en charge dans cette commande"
+  "welcome": "Bienvenue au extension {{target}}!",
+  "notLoggedIn": "Si vous êtes un client de retour, connecter pour voir vos récompenses",
+  "welcomeBackMessage": "Bienvenue"
 }
