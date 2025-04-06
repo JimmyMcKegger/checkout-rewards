@@ -6,3 +6,4 @@ node_modules/
 .vscode/*
 extensions/*/dist
 extensions/*/node_modules
+*.env*
