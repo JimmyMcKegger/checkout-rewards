@@ -11,6 +11,25 @@ import {
 } from "@shopify/polaris";
 import { api } from "../api";
 
+const hasRequiredMetaDefinitions = () => {
+  return (
+    api.shopifyShop?.metaDefinitions?.length > 0 &&
+    api.shopifyShop?.metaDefinitions[0]?.key === "gadget"
+  );
+}
+
+const allMetaDefinitions = api.shopifyShop?.metaDefinitions?.map(
+  (metaDefinition) => {
+    return {
+      key: metaDefinition.key,
+      value: metaDefinition.value,
+    };
+  }
+);
+console.log("allMetaDefinitions", allMetaDefinitions);
+
+console.log("hasRequiredMetaDefinitions", hasRequiredMetaDefinitions());
+
 export default function Index() {
   return (
     <Page title="App">

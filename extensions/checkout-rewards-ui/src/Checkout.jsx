@@ -45,7 +45,7 @@ function Extension() {
 	// customer logged in
 	else {
 		console.log("Customer", customer);
-		const name = customer.firstName || customer.lastName || customer.email;
+		const name = customer.firstName || customer.email;
 		const welcomMessage = `${translate("welcomeBackMessage")}, ${name}!`;
 
 		return (
