@@ -23,6 +23,7 @@ export const settings: GadgetSettings = {
         type: "partner",
         scopes: [
           "read_customers",
+          "write_customers",
           "read_orders",
           "read_products",
           "read_metaobject_definitions",

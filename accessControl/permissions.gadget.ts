@@ -111,6 +111,7 @@ export const permissions: GadgetPermissions = {
         },
       },
       actions: {
+        createCustomerPointsMetafield: true,
         scheduledShopifySync: true,
       },
     },

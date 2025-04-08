@@ -5,10 +5,9 @@ export function NavMenu() {
   return (
     <AppBridgeNavMenu>
       <Link to="/" rel="home">
-        Shop Information
+        Customer Information
       </Link>
       <Link to="/about">About</Link>
-      <Link to="/customers">Customers</Link>
     </AppBridgeNavMenu>
   );
 }
