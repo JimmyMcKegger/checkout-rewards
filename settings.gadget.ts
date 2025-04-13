@@ -28,6 +28,7 @@ export const settings: GadgetSettings = {
           "read_products",
           "read_metaobject_definitions",
           "read_payment_customizations",
+          "write_discounts",
           "unauthenticated_read_checkouts",
           "unauthenticated_read_customer_tags",
           "unauthenticated_read_customers",
