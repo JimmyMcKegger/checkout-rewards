@@ -32,16 +32,12 @@ export const run = async ({ params, logger, api, connections }) => {
 		const variables = {
 			definition: {
 				name: "Points",
-				namespace: "$app:rewards",
+				namespace: "rewards",
 				key: "points",
 				description: "Customer reward points",
 				type: "number_integer",
 				ownerType: "CUSTOMER",
-				access: {
-					admin: "MERCHANT_READ_WRITE",
-					customerAccount: "READ",
-					storefront: "PUBLIC_READ",
-				},
+        pin: true
 			},
 		};
 
@@ -51,12 +47,14 @@ export const run = async ({ params, logger, api, connections }) => {
 			variables,
 		});
 
-		logger.info("Customer points metafield definition created successfully", {
+		logger.info("Customer points metafield definition created!", {
 			result,
 		});
+    // save the metafield definition to the database
+
 		return result;
 	} catch (error) {
-		logger.error("Error creating customer points metafield definition", {
+		logger.error("Error creating rewards points metafield definition", {
 			error: error.message,
 			stack: error.stack,
 		});
@@ -72,6 +70,6 @@ export const run = async ({ params, logger, api, connections }) => {
  */
 
 /**
- * Returns the result of the writeToShopify action.
+ * Result of writeToShopify action.
  * @returns {Promise<MetafieldDefinitionResult>}
  */

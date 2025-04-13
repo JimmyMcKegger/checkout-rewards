@@ -31,14 +31,7 @@ export default function Index() {
 	useEffect(() => {
 		const fetchMetaDefinition = async () => {
 			try {
-				//{
-				//  metafieldDefinitions(namespace: "$app:rewards", ownerType: CUSTOMER, first: 1) {
-				//    nodes {
-				//      id
-				//      name
-				//    }
-				//  }
-				//}
+
 				// find metafiesld definition namespace
 				const existingDefinitions = await api.shopifyShop.metafieldDefinitions({
 					namespace: "$app:rewards",

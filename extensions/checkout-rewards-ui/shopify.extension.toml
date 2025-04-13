@@ -33,9 +33,10 @@ network_access = true
 # products, customers, and more. Learn more:
 # https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#metafields
 
-# [[extensions.metafields]]
-# namespace = "my_namespace"
-# key = "my_key"
+[[extensions.metafields]]
+namespace = "rewards"
+key = "points"
+
 # [[extensions.metafields]]
 # namespace = "my_namespace"
 # key = "my_other_key"
