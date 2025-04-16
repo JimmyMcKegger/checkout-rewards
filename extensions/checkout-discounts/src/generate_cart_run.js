@@ -12,19 +12,20 @@ import {
 
 /**
  * generateCartRun
- * @param {CartInput} input - The CartInput
- * @returns {CartLinesDiscountsGenerateRunResult} - The function result with discounts.
+ * @param {CartInput} input
+ * @returns {CartLinesDiscountsGenerateRunResult}
  */
 export function generateCartRun(input) {
-    if (!input.cart.lines.length) {
-        throw new Error('No cart lines found');
-    }
+    console.log('generateCartRun', { input });
+
     const maxCartLine = input.cart.lines.reduce((maxLine, line) => {
         if (line.cost.subtotalAmount > maxLine.cost.subtotalAmount) {
             return line;
         }
         return maxLine;
     }, input.cart.lines[0]);
+
+
     return {
         operations: [
             {

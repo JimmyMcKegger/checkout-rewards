@@ -7,15 +7,11 @@ import {
 	Text,
 	useApi,
 	useCustomer,
-	useExtension,
-	useSession,
-	useApplyAttributeChange,
-	useInstructions,
 	useTranslate,
 	useAppMetafields,
 } from "@shopify/ui-extensions-react/checkout";
 
-// Choose an extension target
+// extension target
 const target = "purchase.checkout.reductions.render-after";
 
 export default reactExtension(target, () => <Extension />);
@@ -23,7 +19,6 @@ export default reactExtension(target, () => <Extension />);
 function Extension() {
 	const translate = useTranslate();
 	const { extension } = useApi();
-	console.log("extension", extension);
 
 	const [metafieldPoints, setMetafieldPoints] = useState(0);
 
@@ -57,10 +52,6 @@ function Extension() {
 		if (numberValue > 0) {
 			setMetafieldPoints(numberValue);
 		}
-		// If we find the metafield, set the value
-		if (typeof pointsMetafield?.metafield?.value === "number") {
-			setMetafieldPoints(pointsMetafield.metafield.value);
-		}
 	}, [customer, metafield]);
 
 	console.log("FINAL", metafieldPoints);
@@ -91,6 +82,7 @@ function Extension() {
 				{/* show points */}
 				<Text>You have {metafieldPoints} points!</Text>
 				{/* apply available discounts? */}
+
 				<Checkbox onChange={onCheckboxChange}>
 					{translate("welcomeBackMessage")}
 				</Checkbox>

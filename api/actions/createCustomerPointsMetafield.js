@@ -11,7 +11,7 @@ export const run = async ({ params, logger, api, connections }) => {
 			throw new Error("No shop ID available");
 		}
 
-		// https://shopify.dev/docs/api/admin-graphql/2025-01/mutations/metafieldDefinitionCreate?language=remix
+		// https://shopify.dev/docs/api/admin-graphql/2025-04/mutations/metafieldDefinitionCreate?language=remix
 		// CreateMetafieldDefinition mutation
 		const mutation = `#graphql
     mutation CreateMetafieldDefinition($definition: MetafieldDefinitionInput!) {

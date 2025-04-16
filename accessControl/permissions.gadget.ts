@@ -9,8 +9,11 @@ import type { GadgetPermissions } from "gadget-server";
 export const permissions: GadgetPermissions = {
   type: "gadget/permissions/v1",
   roles: {
-    "shopify-app-users": {
+    function: {
       storageKey: "Role-Shopify-App",
+      default: {
+        read: true,
+      },
       models: {
         shopifyBillingAddress: {
           read: {
@@ -112,7 +115,9 @@ export const permissions: GadgetPermissions = {
       },
       actions: {
         createCustomerPointsMetafield: true,
+        queryFunctions: true,
         scheduledShopifySync: true,
+        writeToShopify: true,
       },
     },
     unauthenticated: {

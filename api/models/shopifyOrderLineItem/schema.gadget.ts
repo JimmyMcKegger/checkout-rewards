@@ -26,8 +26,6 @@ export const schema: GadgetModel = {
       "quantity",
       "requiresShipping",
       "shop",
-      "shopifyCreatedAt",
-      "shopifyUpdatedAt",
       "sku",
       "taxLines",
       "taxable",

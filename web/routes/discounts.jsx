@@ -14,7 +14,7 @@ export default function Discounts() {
       }}
     >
       <Text variant="bodyMd" as="p">
-        This is a simple Shopify Embedded App.
+        This is where you can add discounts based on a number of points
       </Text>
     </Page>
   );

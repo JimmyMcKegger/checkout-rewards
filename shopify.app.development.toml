@@ -7,7 +7,7 @@ name = "checkout-rewards-app-dev"
 handle = "checkout-rewards-app-dev"
 
 [webhooks]
-api_version = "2025-01"
+api_version = "2025-04"
 
 [auth]
 redirect_urls = [
