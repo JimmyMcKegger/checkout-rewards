@@ -1,5 +1,6 @@
 {
-  "welcome": "Welcome to the {{target}} extension!",
-  "notLoggedIn": "If you are a returning customer, please log in to see your rewards",
-  "welcomeBackMessage": "Welcome back"
+  "welcome": "Welcome to Checkout Rewards",
+  "notLoggedIn": "Please log in to see your rewards",
+  "welcomeBackMessage": "Welcome back",
+  "offerDiscount": "Would you like 10% off?"
 }

@@ -1,42 +1,73 @@
 /** @type { ActionRun } */
 export const run = async ({ params, logger, api, connections }) => {
   try {
-    // Get the shop ID
+    logger.info("queryFunctions action started");
     const shopId = params.shopId || connections.shopify.currentShop?.id?.toString();
 
     if (!shopId) {
-      logger.error("No shop ID");
+      logger.error("No shop ID available");
       throw new Error("shopId is required");
     }
 
-    // Shopify client
-    const shopify = await connections.shopify.forShopId(shopId);
+    logger.info(`Using shop ID: ${shopId}`);
 
-    // GraphQL query
-    const result = await shopify.graphql(`
-      query {
-        shopifyFunctions(first: 25) {
-          nodes {
-            app {
+    const shopify = await connections.shopify.forShopId(shopId);
+    logger.info("Shopify connection established successfully");
+
+    // query functions
+    let functionId;
+    try {
+      logger.info("Shopify Functions...");
+      const result = await shopify.graphql(`
+        query {
+          shopifyFunctions(first: 25) {
+            nodes {
+              app {
+                title
+              }
+              apiType
               title
+              id
             }
-            apiType
-            title
-            id
           }
         }
+      `);
+
+      const shopifyFunctionsData = result.shopifyFunctions;
+
+      if (!shopifyFunctionsData) {
+        throw new Error("shopifyFunctions not found in response");
       }
-    `);
 
-    logger.info("Shopify Functions query");
-    logger.info(JSON.stringify(result, null, 2));
+      // Find the discount function
+      const discountFunction = shopifyFunctionsData.nodes.find(
+        node => node.apiType === "discount"
+      );
 
-    return result;
+      if (!discountFunction) {
+        // List what functions we did find to help debug
+        logger.error("Available functions:",
+          shopifyFunctionsData.nodes.map(node => ({title: node.title, apiType: node.apiType})));
+        throw new Error("No discount function found");
+      }
+
+      functionId = discountFunction.id;
+
+      if (!functionId) {
+        throw new Error("Function ID is missing");
+      }
+
+      logger.info(`Found discount function ID: ${functionId}`);
+
+      return functionId;
+
+
+    } catch (queryError) {
+      logger.error("Error finding discount function:", queryError);
+      throw queryError;
+    }
   } catch (error) {
-    logger.error("Error in queryFunctions action", {
-      error: error.message,
-      stack: error.stack
-    });
+    logger.error("Error in queryFunctions action:", error);
     throw error;
   }
 };

@@ -1,4 +1,4 @@
-A shopify app to manage checkout rewards for customers.gadgetLogo
+A shopify app to manage checkout rewards for customers.
 
 
 

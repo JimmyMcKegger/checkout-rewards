@@ -25,67 +25,84 @@ export default function Index() {
   const [{ data: funcData, fetching: funFetching, error: funcError }, queryfunctions] =
     useGlobalAction(api.queryFunctions);
 
-  // Get shop ID from the current shop
+  // Get shop ID
   useEffect(() => {
     const fetchShopId = async () => {
       try {
-        // Fetch the current shop data
-        const shopData = await api.shopifyShop.findMany({
-          first: 1
-        });
-        if (shopData?.edges?.[0]?.node?.id) {
-          const shopId = shopData.edges[0].node.id.toString();
-          console.log("Found shop ID:", shopId);
-          queryfunctions({ shopId });
-        } else {
-          console.error("Shop ID not available");
+        try {
+          const myStore = await api.shopifyShop.findFirst();
+
+          if (myStore?.id) {
+            const shopId = myStore.id.toString();
+            console.log("Found shop ID:", shopId);
+
+            // queryfunctions and get the function ID from the response
+            const response = await queryfunctions({ shopId });
+            console.log("Query functions response:", response);
+
+            // response with functionId
+            if (response?.data?.success && response?.data?.functionId) {
+              const functionId = response.data.functionId;
+              console.log("Function ID:", functionId);
+							console.log("typeof functionId", typeof functionId);
+
+              // create a discount if none exists
+              const autoDiscount = await api.createAutomaticAppDiscount({
+                shopId,
+                functionId
+              });
+
+              console.log("DISCOUNT", autoDiscount);
+            } else {
+              console.error("Invalid response:", response);
+            }
+          }
+        } catch (firstShopError) {
+          console.error("Error getting shop:", firstShopError);
         }
       } catch (error) {
-        console.error("Error fetching shop ID:", error);
+        console.error("Error in shop ID:", error);
       }
     };
 
+    console.log("Index page loaded - setting up discount creation");
     fetchShopId();
   }, [queryfunctions]);
 
-  console.log("funcData:", funcData);
-  console.log("funFetching:", funFetching);
-  console.log("funcError:", funcError);
-
   useEffect(() => {
-    const fetchMetaDefinition = async () => {
+    const checkAndCreateMetafield = async () => {
       try {
-        // find metafield
+        // check if metafield definition exists
         const existingDefinitions = await api.shopifyShop.metafieldDefinitions({
           namespace: "rewards",
           ownerType: "CUSTOMER",
           first: 1,
         });
+
         if (existingDefinitions?.nodes?.length === 1) {
+          // update state
           const definition = existingDefinitions.nodes[0];
           const result = `ID: ${definition.id}, Name: ${definition.name}`;
-					console.log("storeMetafildDefinition", storeMetafildDefinition);
+          console.log("Found existing metafield definition:", result);
           setStoreMetafildDefinition(result);
           setMetaDefinitionExists(true);
+        } else {
+          // create it
+          console.log("No metafield definition found, creating one...");
+          try {
+            const result = await createCustomerPointsMetafield();
+            setMetafieldResult(result);
+            console.log("Created metafield:", result);
+          } catch (createError) {
+            console.error("Error creating metafield:", createError);
+          }
         }
       } catch (error) {
-        console.error("Error fetching meta definitions:", error);
+        console.error("Error checking metafield definitions:", error);
       }
     };
 
-    const createMetafield = async () => {
-      try {
-        const result = await createCustomerPointsMetafield();
-        setMetafieldResult(result);
-      } catch (error) {
-        console.error("Error creating metafield:", error);
-      }
-    };
-
-    fetchMetaDefinition();
-    if (!metaDefinitionExists) {
-      createMetafield();
-    }
+    checkAndCreateMetafield();
   }, [createCustomerPointsMetafield]);
 
   return (
