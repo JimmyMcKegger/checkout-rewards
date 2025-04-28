@@ -13,8 +13,12 @@ export const permissions: GadgetPermissions = {
       storageKey: "Role-Shopify-App",
       default: {
         read: true,
+        action: true,
       },
       models: {
+        session: {
+          read: true,
+        },
         shopifyBillingAddress: {
           read: {
             filter:
@@ -61,6 +65,9 @@ export const permissions: GadgetPermissions = {
             filter:
               "accessControl/filters/shopify/shopifyCustomer.gelly",
           },
+          actions: {
+            update: true,
+          },
         },
         shopifyGdprRequest: {
           read: {
@@ -97,6 +104,9 @@ export const permissions: GadgetPermissions = {
           actions: {
             install: true,
             reinstall: true,
+            savePrePurchaseProduct: {
+              filter: null,
+            },
             uninstall: true,
             update: true,
           },

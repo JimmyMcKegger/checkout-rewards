@@ -6,7 +6,19 @@ import type { GadgetModel } from "gadget-server";
 export const schema: GadgetModel = {
   type: "gadget/model-schema/v1",
   storageKey: "DataModel-Shopify-Shop",
-  fields: {},
+  fields: {
+    checkoutRewardsProduct: {
+      type: "string",
+      shopifyMetafield: {
+        privateMetafield: false,
+        namespace: "checkout_rewards",
+        key: "freeGift",
+        metafieldType: "product_reference",
+        allowMultipleEntries: false,
+      },
+      storageKey: "PwSxMj65RJCe",
+    },
+  },
   shopify: {
     fields: [
       "address1",
