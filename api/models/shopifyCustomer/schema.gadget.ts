@@ -9,7 +9,15 @@ export const schema: GadgetModel = {
   fields: {
     points: {
       type: "number",
+      shopifyMetafield: {
+        privateMetafield: false,
+        namespace: "checkout_rewards",
+        key: "points",
+        metafieldType: "number_integer",
+        allowMultipleEntries: false,
+      },
       default: 0,
+      validations: { numberRange: { min: 0, max: null } },
       storageKey: "HZn8SV0SSeU8",
     },
   },

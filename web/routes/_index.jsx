@@ -25,7 +25,7 @@ export default function Index() {
   const [{ data: funcData, fetching: funFetching, error: funcError }, queryfunctions] =
     useGlobalAction(api.queryFunctions);
 
-  // Get shop ID
+  //  shop ID
   useEffect(() => {
     const fetchShopId = async () => {
       try {
