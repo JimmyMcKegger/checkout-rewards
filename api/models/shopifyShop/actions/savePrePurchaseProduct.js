@@ -1,5 +1,12 @@
-import { applyParams, save, ActionOptions, preventCrossShopDataAccess, SavePrePuchaseProductShopifyShopActionContext } from "gadget-server";
+import { applyParams, save, ActionOptions, preventCrossShopDataAccess, SavePrePuchaseProductActionContext } from "gadget-server";
 import { preventCrossShopDataAccess } from "gadget-server/shopify";
+
+// https://docs.gadget.dev/guides/actions/code#adding-params-to-model-actions
+export const params = {
+  productId: {
+    type: "string",
+  }
+};
 
 /** @type { ActionRun } */
 export const run = async ({ params, record, logger, api, connections }) => {

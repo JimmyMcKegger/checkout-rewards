@@ -8,10 +8,8 @@ import {
 	Banner,
 	FooterHelp,
 	Layout,
-	Link,
 	Page,
 	Select,
-	Text,
 	Spinner,
 	Form,
 	Button,
@@ -22,14 +20,20 @@ import { api } from "../api";
 import { useEffect, useState } from "react";
 import { useNavigate } from "@remix-run/react";
 
-const FreeGiftForm = ({ products, shop }) => {
+// TODO: load page with initial shopifyShop.checkoutRewardsProduct value
 
-  // check for missing data
-  if (!shop || !shop.id) {
-    return <Banner title="Shop data not available" tone="critical">no shop</Banner>;
-  }
+const FreeGiftForm = ({ products, shop }) => {
+	// check for missing data
+	if (!shop || !shop.id) {
+		return (
+			<Banner title="Shop data not available" tone="critical">
+				no shop
+			</Banner>
+		);
+	}
 
 	// handles form state and submission
+  // https://docs.gadget.dev/reference/react#useactionform
 	const { submit, control, formState, error, setValue, watch } = useActionForm(
 		api.shopifyShop.savePrePurchaseProduct,
 		{
@@ -37,7 +41,6 @@ const FreeGiftForm = ({ products, shop }) => {
 			select: {
 				id: true,
 			},
-
 			send: ["id", "productId"],
 		}
 	);
@@ -45,10 +48,10 @@ const FreeGiftForm = ({ products, shop }) => {
 	// watch for updates to the form state
 	const updateProductId = watch("shopifyShop.checkoutRewardsProduct");
 
-	// save product id in form state
-	useEffect(() => {
-		setValue("productId", updateProductId);
-	}, [updateProductId]);
+	// save product id in form
+  useEffect(() => {
+    setValue("productId", updateProductId);
+  }, [updateProductId, setValue]);
 
 	return (
 		<Form onSubmit={submit}>
@@ -97,14 +100,20 @@ export default function FreeGift() {
 	const [productOptions, setProductOptions] = useState([]);
 
 	// use gadget hooks to fetch products as options
-	const {
-		data: products,
-		fetching: productsFetching,
-		error: productsError,
-	} = useFindMany(api.shopifyProduct, {
+  // https://docs.gadget.dev/reference/react#usefindmany
+	const [
+		{ data: productsData, fetching: productsFetching, error: productsError },
+		_refetch
+	] = useFindMany(api.shopifyProduct, {
 		select: {
-				id: true,
-				title: true,
+			id: true,
+			title: true,
+			productType: true,
+		},
+		filter: {
+			productType: {
+				notEquals: "giftcard",
+			},
 		},
 	});
 
@@ -117,16 +126,22 @@ export default function FreeGift() {
 		});
 
 	// useEffect to build product options for the select component
-  useEffect(() => {
-    if (products) {
-      const options = products.map((product) => ({
-        value: `gid://shopify/Product/${product.id}`,
-        label: product.title,
-      }));
+	useEffect(() => {
+		console.log("Product data:", productsData);
 
-      setProductOptions(options);
-    }
-  }, [products]);
+		if (productsData) {
+			const productsArray = Array.isArray(productsData) ? productsData : [];
+
+			// products to options
+			const options = productsArray.map((product) => ({
+				value: `gid://shopify/Product/${product.id}`,
+				label: product.title,
+			}));
+
+			console.log("Product options:", options);
+			setProductOptions(options);
+		}
+	}, [productsData]);
 
 	return (
 		<Page
@@ -139,7 +154,6 @@ export default function FreeGift() {
 			{productsFetching || shopFetching ? (
 				<>
 					<Spinner size="large" />
-					<Text>{productOptions}</Text>
 				</>
 			) : (
 				<Layout>
