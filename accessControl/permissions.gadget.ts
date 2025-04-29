@@ -155,6 +155,7 @@ export const permissions: GadgetPermissions = {
         },
       },
       actions: {
+        createAutomaticAppDiscount: true,
         createCustomerPointsMetafield: true,
         createDiscountCode: true,
         queryFunctions: true,

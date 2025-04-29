@@ -10,7 +10,40 @@ export const run = async ({ params, record, logger, api, connections }) => {
 
 /** @type { ActionOnSuccess } */
 export const onSuccess = async ({ params, record, logger, api, connections }) => {
-  // Your logic goes here
+  logger.info("PARAMS", params);
+  logger.info("RECORD", record);
+
+  const response = await connections.shopify.current?.graphql(
+    `mutation setMetafield($metafields: [MetafieldsSetInput!]!) {
+    	metafieldsSet(metafields: $metafields) {
+    		metafields {
+    			id
+    			value
+    			ownerType
+    			key
+    			namespace
+    		}
+    		userErrors {
+    			field
+    			message
+    		}
+    	}
+    }
+    `,
+    {
+      metafields: [
+        {
+          namespace: "rewards",
+          key: "points",
+          ownerId: `gid://shopify/Customer/${record.id}`,
+          type: "number_integer",
+          value: "0",
+        },
+      ],
+    }
+  );
+
+  logger.info(response);
 };
 
 /** @type { ActionOptions } */

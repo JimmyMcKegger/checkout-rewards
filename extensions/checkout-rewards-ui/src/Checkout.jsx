@@ -12,8 +12,10 @@ import {
 	useInstructions,
 	useDiscountCodes,
 	useApplyDiscountCodeChange,
+	useApplyCartLinesChange,
 } from "@shopify/ui-extensions-react/checkout";
 
+// TODO: move extention target above discount code box
 // extension target
 const target = "purchase.checkout.reductions.render-after";
 
@@ -21,7 +23,11 @@ export default reactExtension(target, () => <Extension />);
 
 function Extension() {
 	const translate = useTranslate();
-	const { extension } = useApi();
+	const { query, extension } = useApi();
+
+	const applyCartLineChanges = useApplyCartLinesChange();
+
+
 
 	// check instructions before changing the checkout
 	const instructions = useInstructions();
@@ -32,6 +38,10 @@ function Extension() {
 	const applyDiscountCodeChange = useApplyDiscountCodeChange();
 	const [hasAddedDiscountCode, setHasAddedDiscountCode] = useState(false);
 	const [metafieldPoints, setMetafieldPoints] = useState(0);
+	const [freeGift, setFreeGift] = useState(null);
+	const [loading, setLoading] = useState(false);
+	const [adding, setAdding] = useState(false);
+	const [error, setError] = useState(false);
 
 	// add or remove discount when checkbox changes
 	useEffect(() => {
@@ -48,7 +58,7 @@ function Extension() {
 		}
 	}, [hasAddedDiscountCode, applyDiscountCodeChange]);
 
-	// moveed inside the component
+	// moved inside the component
 	const onCheckboxChange = (isChecked) => {
 		setHasAddedDiscountCode(isChecked);
 	};
@@ -56,11 +66,22 @@ function Extension() {
 	// get the customer with useCustomer()
 	const customer = useCustomer();
 
-	const metafield = useAppMetafields({
-		type: "customer",
-		namespace: "rewards",
+	const allMetafields = useAppMetafields();
+	console.log("All metafields", allMetafields);
+	// get metafields for product and points
+	const customerPoints = useAppMetafields({
+		namespace: "$app:checkout_rewards",
 		key: "points",
 	});
+
+	const prePurchaseProduct = useAppMetafields({
+		type: "shop",
+		namespace: "checkout_rewards",
+		key: "freeGift",
+	});;
+
+	console.log("Customer points metafield", customerPoints);
+	console.log("Pre-purchase product metafield", prePurchaseProduct);
 
 	useEffect(() => {
 		// Get the customer ID
@@ -69,19 +90,25 @@ function Extension() {
 			return;
 		}
 
-		const pointsMetafield = metafield.find(({ target }) => {
+		const pointsMetafield = customerPoints.find(({ target }) => {
+			console.log("Target", target);
 			// Check if the target of the metafield is the customer
 			const strToCheck = `gid://shopify/Customer/${target.id}`;
+
+			console.log("Customer ID", customerId);
+			console.log("String to check", strToCheck);
 			return strToCheck === customerId;
 		});
 
 		const textValue = pointsMetafield?.metafield?.value;
+		console.log("Text value", textValue);
 		const numberValue = parseInt(textValue);
+		console.log("Number value", numberValue);
 
 		if (numberValue > 0) {
 			setMetafieldPoints(numberValue);
 		}
-	}, [customer, metafield]);
+	}, [customer, customerPoints]);
 
 	// if no customer
 	if (!customer) {

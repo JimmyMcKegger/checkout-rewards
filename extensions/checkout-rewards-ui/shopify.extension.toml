@@ -15,6 +15,7 @@ type = "ui_extension"
 # and the file that contains your extension’s source code. Learn more:
 # https://shopify.dev/docs/api/checkout-ui-extensions/unstable/extension-targets-overview
 
+# TODO: move extention target above discount code box
 [[extensions.targeting]]
 module = "./src/Checkout.jsx"
 target = "purchase.checkout.reductions.render-after"
@@ -33,9 +34,24 @@ network_access = true
 # products, customers, and more. Learn more:
 # https://shopify.dev/docs/api/checkout-ui-extensions/unstable/configuration#metafields
 
+
+[[extensions.metafields]]
+namespace = "$app:checkout_rewards"
+key = "points"
+target = "customer"
+
+[[extensions.metafields]]
+namespace = "checkout_rewards"
+key = "points"
+target = "customer"
+
 [[extensions.metafields]]
 namespace = "rewards"
 key = "points"
+
+[[extensions.metafields]]
+namespace = "checkout_rewards"
+key = "freeGift"
 
 # [[extensions.metafields]]
 # namespace = "my_namespace"

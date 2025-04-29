@@ -11,7 +11,7 @@ export const schema: GadgetModel = {
       type: "number",
       shopifyMetafield: {
         privateMetafield: false,
-        namespace: "checkout_rewards",
+        namespace: "rewards",
         key: "points",
         metafieldType: "number_integer",
         allowMultipleEntries: false,

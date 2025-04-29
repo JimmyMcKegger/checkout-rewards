@@ -10,7 +10,7 @@ export const run = async ({ params, record, logger, api, connections }) => {
 
   if (customerId) {
     try {
-      // customer's rewards.points metafield using the Shopify GraphQL API
+      // customer's rewards.points metafield
       const response = await connections.shopify.graphql(`
         query getPoints($customerId: ID!) {
           customer(id: $customerId) {
@@ -33,13 +33,12 @@ export const run = async ({ params, record, logger, api, connections }) => {
         record.points = parseInt(pointsMetafield.value) || 0;
         logger.info(`Retrieved rewards points: ${record.rewardsPoints} for customer ${customerId}`);
       } else {
-        logger.info(`No rewards.points metafield found for customer ${customerId}`);
+        logger.info(`No rewards.points metafield on ${customerId}`);
 
         record.rewardsPoints = 0;
       }
     } catch (error) {
       logger.error(`Error fetching customer metafield: ${error.message}`);
-
     }
   }
 
