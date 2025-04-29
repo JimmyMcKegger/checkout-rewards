@@ -69,6 +69,17 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
+        shopifyDiscount: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyDiscount.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
         shopifyGdprRequest: {
           read: {
             filter:
@@ -91,6 +102,28 @@ export const permissions: GadgetPermissions = {
               "accessControl/filters/shopify/shopifyOrderLineItem.gelly",
           },
         },
+        shopifyProduct: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyProduct.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyProductVariant: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyProductVariant.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
         shopifyShippingAddress: {
           read: {
             filter:
@@ -104,9 +137,7 @@ export const permissions: GadgetPermissions = {
           actions: {
             install: true,
             reinstall: true,
-            savePrePurchaseProduct: {
-              filter: null,
-            },
+            savePrePurchaseProduct: true,
             uninstall: true,
             update: true,
           },

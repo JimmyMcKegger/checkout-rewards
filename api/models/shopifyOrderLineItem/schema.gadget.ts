@@ -6,21 +6,31 @@ import type { GadgetModel } from "gadget-server";
 export const schema: GadgetModel = {
   type: "gadget/model-schema/v1",
   storageKey: "DataModel-Shopify-OrderLineItem",
-  fields: {},
+  fields: {
+    fulfillmentService: {
+      type: "string",
+      storageKey:
+        "ModelField-DataModel-Shopify-OrderLineItem-fulfillment_service::FieldStorageEpoch-DataModel-Shopify-OrderLineItem-fulfillment_service-initial",
+    },
+    fulfillmentStatus: {
+      type: "string",
+      storageKey:
+        "ModelField-DataModel-Shopify-OrderLineItem-fulfillment_status::FieldStorageEpoch-DataModel-Shopify-OrderLineItem-fulfillment_status-initial",
+    },
+  },
   shopify: {
     fields: [
       "attributedStaffs",
       "currentQuantity",
       "discountAllocations",
       "fulfillableQuantity",
-      "fulfillmentService",
-      "fulfillmentStatus",
       "giftCard",
       "grams",
       "name",
       "order",
       "price",
       "priceSet",
+      "product",
       "productExists",
       "properties",
       "quantity",
@@ -32,6 +42,7 @@ export const schema: GadgetModel = {
       "title",
       "totalDiscount",
       "totalDiscountSet",
+      "variant",
       "variantInventoryManagement",
       "variantTitle",
       "vendor",

@@ -25,6 +25,7 @@ export default function Index() {
   const [{ data: funcData, fetching: funFetching, error: funcError }, queryfunctions] =
     useGlobalAction(api.queryFunctions);
 
+  // TODO: fix this with useFindFirst(api.shopifyShop)
   //  shop ID
   useEffect(() => {
     const fetchShopId = async () => {
@@ -69,6 +70,7 @@ export default function Index() {
     fetchShopId();
   }, [queryfunctions]);
 
+  // TODO: Move this to the install action
   useEffect(() => {
     const checkAndCreateMetafield = async () => {
       try {
