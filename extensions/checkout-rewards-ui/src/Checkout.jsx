@@ -14,6 +14,13 @@ import {
 	useApplyDiscountCodeChange,
 	useApplyCartLinesChange,
 } from "@shopify/ui-extensions-react/checkout";
+import { set } from "@gadgetinc/react";
+import { Divider } from "@shopify/polaris";
+import {
+	InlineLayout,
+	SkeletonImage,
+	SkeletonText,
+} from "@shopify/ui-extensions/checkout";
 
 // TODO: move extention target above discount code box
 // extension target
@@ -26,8 +33,6 @@ function Extension() {
 	const { query, extension } = useApi();
 
 	const applyCartLineChanges = useApplyCartLinesChange();
-
-
 
 	// check instructions before changing the checkout
 	const instructions = useInstructions();
@@ -42,6 +47,96 @@ function Extension() {
 	const [loading, setLoading] = useState(false);
 	const [adding, setAdding] = useState(false);
 	const [error, setError] = useState(false);
+
+	// fetch freGift on load
+	useEffect(() => {
+		if (freeGift) {
+			// set loading state
+			setLoading(true);
+			// query the product from the setMetafieldPoints
+
+			query(
+				`query freeGiftQuery($id: ID!) {
+					product(id: $id) {
+						id
+						title
+						media(first: 1) {
+							nodes {
+								id
+								preview {
+									image {
+										url
+									}
+								}
+							}
+						}
+						variants(first: 1) {
+							nodes {
+								id
+								title
+								price
+							}
+						}
+					}
+				}
+				`,
+				{
+					variables: {
+						id: freeGift,
+					},
+				}
+			)
+				.then(({ data }) => {
+					// save the product in state
+					setFreeGift(data.product);
+				})
+				.catch((error) => {
+					console.error("Error on freeGiftQuery", error);
+					setError(true);
+				})
+				.finally(() => {
+					// set loading state
+					setLoading(false);
+				});
+		}
+	}, [freeGift, query]);
+
+	// error handling
+	useEffect(() => {
+		if (error) {
+			const timer = setTimeout(() => setError(false), 3000);
+			return () => clearTimeout(timer);
+		}
+	}, [error]);
+
+	// get the cartLines
+	const cartLines = useCartLines();
+
+	// show loading UI while making request, use a skeleton until then
+	if (loading) {
+		return (
+			<BlockStack spacing="loose">
+				<Divider />
+				<Heading level={2}>You might also like</Heading>
+				<BlockStack spacing="loose">
+					<InlineLayout
+						spacing="base"
+						columns={[64, "fill", "auto"]}
+						blockAlignment="center"
+					>
+						<SkeletonImage aspectRatio={1} />
+						<BlockStack spacing="none">
+							<SkeletonText inlineSize="large" />
+							<SkeletonText inlineSize="large" />
+						</BlockStack>
+						<Button kind="secondary" disabled={true}>
+							Add
+						</Button>
+					</InlineLayout>
+				</BlockStack>
+			</BlockStack>
+		);
+	}
 
 	// add or remove discount when checkbox changes
 	useEffect(() => {
@@ -68,17 +163,19 @@ function Extension() {
 
 	const allMetafields = useAppMetafields();
 	console.log("All metafields", allMetafields);
-	// get metafields for product and points
+
+	// get metfield for points
 	const customerPoints = useAppMetafields({
-		namespace: "$app:checkout_rewards",
+		namespace: "rewards",
 		key: "points",
 	});
 
+	// get metfield for free gift
 	const prePurchaseProduct = useAppMetafields({
 		type: "shop",
 		namespace: "checkout_rewards",
 		key: "freeGift",
-	});;
+	});
 
 	console.log("Customer points metafield", customerPoints);
 	console.log("Pre-purchase product metafield", prePurchaseProduct);
@@ -115,9 +212,7 @@ function Extension() {
 		console.log("No customer profile");
 		return (
 			<Banner title={translate("welcome")} status="info">
-				<Text size="medium">
-					{translate("notLoggedIn")}
-				</Text>
+				<Text size="medium">{translate("notLoggedIn")}</Text>
 			</Banner>
 		);
 	}
