@@ -4,7 +4,7 @@ node_modules/
 **/.DS_Store
 .react-router/
 .shopify
-.vscode/*
+*.vscode/*
 extensions/*/dist
 extensions/*/node_modules
 *.env*

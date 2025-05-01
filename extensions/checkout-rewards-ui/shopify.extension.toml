@@ -36,26 +36,23 @@ network_access = true
 
 
 [[extensions.metafields]]
-namespace = "$app:checkout_rewards"
-key = "points"
-target = "customer"
-
-[[extensions.metafields]]
 namespace = "checkout_rewards"
 key = "points"
+type = "customer"
 target = "customer"
 
 [[extensions.metafields]]
 namespace = "rewards"
 key = "points"
+type = "customer"
+target = "customer"
 
 [[extensions.metafields]]
 namespace = "checkout_rewards"
 key = "freeGift"
+type = "shop"
+target = "shop"
 
-# [[extensions.metafields]]
-# namespace = "my_namespace"
-# key = "my_other_key"
 
 # Defines settings that will be collected from merchants installing
 # your extension. Learn more:

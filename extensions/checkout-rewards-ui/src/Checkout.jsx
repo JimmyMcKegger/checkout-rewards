@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useCallback } from "react";
 import {
 	reactExtension,
 	Banner,
@@ -10,247 +10,305 @@ import {
 	useTranslate,
 	useAppMetafields,
 	useInstructions,
-	useDiscountCodes,
 	useApplyDiscountCodeChange,
 	useApplyCartLinesChange,
-} from "@shopify/ui-extensions-react/checkout";
-import { set } from "@gadgetinc/react";
-import { Divider } from "@shopify/polaris";
-import {
+	useCartLines,
+	Heading,
+	Image,
+	Button,
+	Divider,
 	InlineLayout,
-	SkeletonImage,
-	SkeletonText,
-} from "@shopify/ui-extensions/checkout";
+} from "@shopify/ui-extensions-react/checkout";
 
-// TODO: move extention target above discount code box
-// extension target
+// TODO: move this above reductions so the code doesn't shift layout
 const target = "purchase.checkout.reductions.render-after";
 
 export default reactExtension(target, () => <Extension />);
 
 function Extension() {
 	const translate = useTranslate();
-	const { query, extension } = useApi();
-
+	const { query } = useApi();
+	const customer = useCustomer();
+	const cartLines = useCartLines();
+	const { discounts } = useInstructions() || {};
+	const applyDiscountCodeChange = useApplyDiscountCodeChange();
 	const applyCartLineChanges = useApplyCartLinesChange();
 
-	// check instructions before changing the checkout
-	const instructions = useInstructions();
-
-	// https://shopify.dev/docs/api/checkout-ui-extensions/2025-04/apis/discounts
-
-	const discountCodes = useDiscountCodes();
-	const applyDiscountCodeChange = useApplyDiscountCodeChange();
+	// State management
 	const [hasAddedDiscountCode, setHasAddedDiscountCode] = useState(false);
-	const [metafieldPoints, setMetafieldPoints] = useState(0);
-	const [freeGift, setFreeGift] = useState(null);
-	const [loading, setLoading] = useState(false);
-	const [adding, setAdding] = useState(false);
-	const [error, setError] = useState(false);
+	const [customerPoints, setCustomerPoints] = useState(0);
+	const [isLoading, setIsLoading] = useState(true);
+	const [product, setProduct] = useState(null);
+	const [isAddingToCart, setIsAddingToCart] = useState(false);
+	const [productMetafieldValue, setProductMetafieldValue] = useState(null);
+	const [isProductInCart, setIsProductInCart] = useState(false);
 
-	// fetch freGift on load
-	useEffect(() => {
-		if (freeGift) {
-			// set loading state
-			setLoading(true);
-			// query the product from the setMetafieldPoints
+	// if customer isn't logged in return early
+	const isLoggedIn = !!customer;
 
-			query(
-				`query freeGiftQuery($id: ID!) {
-					product(id: $id) {
-						id
-						title
-						media(first: 1) {
-							nodes {
-								id
-								preview {
-									image {
-										url
-									}
-								}
-							}
-						}
-						variants(first: 1) {
-							nodes {
-								id
-								title
-								price
-							}
-						}
-					}
-				}
-				`,
-				{
-					variables: {
-						id: freeGift,
-					},
-				}
-			)
-				.then(({ data }) => {
-					// save the product in state
-					setFreeGift(data.product);
-				})
-				.catch((error) => {
-					console.error("Error on freeGiftQuery", error);
-					setError(true);
-				})
-				.finally(() => {
-					// set loading state
-					setLoading(false);
-				});
-		}
-	}, [freeGift, query]);
-
-	// error handling
-	useEffect(() => {
-		if (error) {
-			const timer = setTimeout(() => setError(false), 3000);
-			return () => clearTimeout(timer);
-		}
-	}, [error]);
-
-	// get the cartLines
-	const cartLines = useCartLines();
-
-	// show loading UI while making request, use a skeleton until then
-	if (loading) {
-		return (
-			<BlockStack spacing="loose">
-				<Divider />
-				<Heading level={2}>You might also like</Heading>
-				<BlockStack spacing="loose">
-					<InlineLayout
-						spacing="base"
-						columns={[64, "fill", "auto"]}
-						blockAlignment="center"
-					>
-						<SkeletonImage aspectRatio={1} />
-						<BlockStack spacing="none">
-							<SkeletonText inlineSize="large" />
-							<SkeletonText inlineSize="large" />
-						</BlockStack>
-						<Button kind="secondary" disabled={true}>
-							Add
-						</Button>
-					</InlineLayout>
-				</BlockStack>
-			</BlockStack>
-		);
-	}
-
-	// add or remove discount when checkbox changes
-	useEffect(() => {
-		if (hasAddedDiscountCode) {
-			applyDiscountCodeChange({
-				code: "TEST",
-				type: "addDiscountCode",
-			});
-		} else {
-			applyDiscountCodeChange({
-				code: "TEST",
-				type: "removeDiscountCode",
-			});
-		}
-	}, [hasAddedDiscountCode, applyDiscountCodeChange]);
-
-	// moved inside the component
-	const onCheckboxChange = (isChecked) => {
-		setHasAddedDiscountCode(isChecked);
-	};
-
-	// get the customer with useCustomer()
-	const customer = useCustomer();
-
-	const allMetafields = useAppMetafields();
-	console.log("All metafields", allMetafields);
-
-	// get metfield for points
-	const customerPoints = useAppMetafields({
-		namespace: "rewards",
-		key: "points",
-	});
-
-	// get metfield for free gift
-	const prePurchaseProduct = useAppMetafields({
-		type: "shop",
-		namespace: "checkout_rewards",
-		key: "freeGift",
-	});
-
-	console.log("Customer points metafield", customerPoints);
-	console.log("Pre-purchase product metafield", prePurchaseProduct);
-
-	useEffect(() => {
-		// Get the customer ID
-		const customerId = customer?.id;
-		if (!customer) {
-			return;
-		}
-
-		const pointsMetafield = customerPoints.find(({ target }) => {
-			console.log("Target", target);
-			// Check if the target of the metafield is the customer
-			const strToCheck = `gid://shopify/Customer/${target.id}`;
-
-			console.log("Customer ID", customerId);
-			console.log("String to check", strToCheck);
-			return strToCheck === customerId;
-		});
-
-		const textValue = pointsMetafield?.metafield?.value;
-		console.log("Text value", textValue);
-		const numberValue = parseInt(textValue);
-		console.log("Number value", numberValue);
-
-		if (numberValue > 0) {
-			setMetafieldPoints(numberValue);
-		}
-	}, [customer, customerPoints]);
-
-	// if no customer
-	if (!customer) {
-		console.log("No customer profile");
+	if (!isLoggedIn) {
 		return (
 			<Banner title={translate("welcome")} status="info">
 				<Text size="medium">{translate("notLoggedIn")}</Text>
 			</Banner>
 		);
 	}
-	// customer logged in and can  update
-	else if (customer && instructions.discounts.canUpdateDiscountCodes) {
-		console.log("Customer", customer);
-		const name = customer.firstName || customer.email;
-		const welcomMessage = `${translate("welcomeBackMessage")}, ${name}!`;
-		const discountOffer = translate("offerDiscount");
 
-		return (
-			<BlockStack border={"dotted"} padding={"tight"}>
-				<Banner title="Checkout Rewards">
-					<Text>{welcomMessage}</Text>
-				</Banner>
-				{/* show points */}
-				<Text>You have {metafieldPoints} points!</Text>
+	// ref to prevent duplicate logs
+	const hasLoggedProductStatus = useRef(false);
 
-				<Checkbox checked={hasAddedDiscountCode} onChange={onCheckboxChange}>
-					{discountOffer}
-				</Checkbox>
-			</BlockStack>
+	// all metafields
+	const allMetaFields = useAppMetafields();
+	console.log("allMetaFields", allMetaFields);
+
+	// Get metafields
+	const pointsMetafields = useAppMetafields({
+		type: "customer",
+		namespace: "rewards",
+		key: "points",
+	});
+
+	const productMetafields = useAppMetafields({
+		type: "shop",
+		namespace: "checkout_rewards",
+		key: "freeGift",
+	});
+
+	// Extract customer points from metafields
+	useEffect(() => {
+		if (!customer || !pointsMetafields?.length) return;
+
+		const customerId = customer.id;
+		const metafield = pointsMetafields.find(
+			({ target }) => `gid://shopify/Customer/${target.id}` === customerId
 		);
-	} else {
-		const name = customer.firstName || customer.email;
-		const welcomMessage = `${translate("welcomeBackMessage")}, ${name}!`;
 
+		if (metafield?.metafield?.value) {
+			setCustomerPoints(parseInt(metafield.metafield.value) || 0);
+		}
+	}, [customer, pointsMetafields]);
+
+	// Extract product metafield value
+	useEffect(() => {
+		if (!productMetafields?.length) return;
+
+		const value = productMetafields[0]?.metafield?.value;
+		if (value) {
+			setProductMetafieldValue(value);
+		}
+	}, [productMetafields]);
+
+	// product data
+	useEffect(() => {
+		if (!productMetafieldValue) return;
+
+		let isMounted = true;
+
+		const fetchProduct = () => {
+			query(
+				`query getProduct($id: ID!) {
+					product(id: $id) {
+						id
+						title
+						images(first: 1) {
+							nodes {
+								id
+								url
+							}
+						}
+						variants(first: 1) {
+							nodes {
+								id
+								title
+								price {
+									amount
+									currencyCode
+								}
+							}
+						}
+					}
+				}`,
+				{
+					variables: {
+						id: productMetafieldValue,
+					},
+				}
+			)
+			.then(({ data }) => {
+				if (isMounted && data?.product) {
+					setProduct(data.product);
+				}
+			})
+			.catch((error) => {
+				console.error("Product fetch error:", error?.message || "Unknown error");
+			});
+		};
+
+		fetchProduct();
+
+		return () => {
+			isMounted = false;
+		};
+	}, [productMetafieldValue, query]);
+
+	// check if product is already in cart
+	useEffect(() => {
+		if (!product || !cartLines?.lines) {
+			setIsProductInCart(false);
+			return;
+		}
+
+		const productVariantId = product.variants?.nodes[0]?.id;
+		const found = cartLines.lines.some(
+			line => line.merchandise?.id === productVariantId
+		);
+
+		setIsProductInCart(found);
+	}, [product, cartLines]);
+
+	// loading when data is ready
+	useEffect(() => {
+		const dataIsReady =
+			!customer ||
+			(customer && pointsMetafields && pointsMetafields.length > 0);
+
+		const productIsReady =
+			!productMetafieldValue ||
+			(productMetafieldValue && product);
+
+		if (dataIsReady && productIsReady) {
+			setIsLoading(false);
+		}
+
+		const timer = setTimeout(() => {
+			setIsLoading(false);
+		}, 3000);
+
+		return () => clearTimeout(timer);
+	}, [customer, pointsMetafields, productMetafieldValue, product]);
+
+	// Log product status only once
+	useEffect(() => {
+		if (hasLoggedProductStatus.current) return;
+
+		hasLoggedProductStatus.current = true;
+		const shouldShowProduct = product && !isProductInCart;
+
+		console.log("Product available:", !!product);
+		console.log("Should show product:", shouldShowProduct);
+	}, [product, isProductInCart]);
+
+	// Predefined handlers using useCallback to avoid inline functions
+	const handleCheckboxChange = useCallback((newValue) => {
+		setHasAddedDiscountCode(newValue);
+
+		applyDiscountCodeChange({
+			code: "TEST",
+			type: newValue ? "addDiscountCode" : "removeDiscountCode",
+		});
+	}, [applyDiscountCodeChange]);
+
+	const handleAddToCart = useCallback(() => {
+		if (!product || isAddingToCart) return;
+
+		setIsAddingToCart(true);
+
+		applyCartLineChanges({
+			type: "addCartLines",
+			lines: [
+				{
+					merchandiseId: product.variants.nodes[0].id,
+					quantity: 1,
+				},
+			],
+		})
+		.then(() => {
+			// TODO: update state
+		})
+		.catch((error) => {
+			console.error("Cart update error:", error?.message || "Unknown error");
+		})
+		.finally(() => {
+			setIsAddingToCart(false);
+		});
+	}, [product, isAddingToCart, applyCartLineChanges]);
+
+	// rendering values
+	const customerName = customer?.firstName || customer?.email || "";
+	const welcomeMessage = `${translate("welcomeBackMessage")}, ${customerName}!`;
+	const shouldShowProduct = product && !isProductInCart;
+
+	// Loading state
+	if (isLoading) {
 		return (
-			<BlockStack border={"dotted"} padding={"tight"}>
+			<BlockStack spacing="loose">
 				<Banner title="Checkout Rewards">
-					<Text>{welcomMessage}</Text>
-				</Banner>
-
-				<Text>You have {metafieldPoints} points!</Text>
-				<Banner status="warning">
-					Checkout Rewards discounts are unavailable
+					<Text>Loading rewards...</Text>
 				</Banner>
 			</BlockStack>
 		);
 	}
+
+	// renders for logged in customers (rewards and product)
+	return (
+		<BlockStack spacing="loose">
+			{/* Rewards */}
+			<BlockStack border="dotted" padding="tight">
+				<Banner title="Checkout Rewards">
+					<Text>{welcomeMessage}</Text>
+				</Banner>
+				<Text>You have {customerPoints} points!</Text>
+
+				{discounts?.canUpdateDiscountCodes ? (
+					<Checkbox
+						checked={hasAddedDiscountCode}
+						onChange={handleCheckboxChange}
+					>
+						{translate("offerDiscount")}
+					</Checkbox>
+				) : (
+					<Banner status="warning">
+						Checkout Rewards discounts are unavailable
+					</Banner>
+				)}
+			</BlockStack>
+
+			{/* Product section - if product exists and is not in cart */}
+			{shouldShowProduct && (
+				<BlockStack spacing="loose">
+					<Divider />
+					<Heading level={2}>You might also like</Heading>
+					<InlineLayout
+						spacing="base"
+						columns={[64, "fill", "auto"]}
+						blockAlignment="center"
+					>
+						<Image
+							border="base"
+							borderWidth="base"
+							borderRadius="loose"
+							source={product.images.nodes[0]?.url}
+							description={product.title}
+							aspectRatio={1}
+						/>
+						<BlockStack spacing="none">
+							<Text size="medium" fontWeight="bold">
+								{product.title}
+							</Text>
+							<Text size="medium" appearance="subdued">
+								{product.variants.nodes[0]?.price.amount} {product.variants.nodes[0]?.price.currencyCode}
+							</Text>
+						</BlockStack>
+						<Button
+							kind="secondary"
+							disabled={isAddingToCart}
+							onPress={handleAddToCart}
+						>
+							Add
+						</Button>
+					</InlineLayout>
+				</BlockStack>
+			)}
+		</BlockStack>
+	);
 }
