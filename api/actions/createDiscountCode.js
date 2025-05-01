@@ -198,6 +198,8 @@ export const onSuccess = async ({
 	try {
 		const shopId = connections.shopify.currentShop.id;
 
+		// TODO: save the discount code's % and point cost into metafields
+
 		// the discount code
 		const discountCode = record?.code || params.code;
 		if (!discountCode) {

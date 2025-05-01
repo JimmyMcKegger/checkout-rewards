@@ -87,7 +87,7 @@ function Extension() {
 		}
 	}, [customer, pointsMetafields]);
 
-	// Extract product metafield value
+	// product metafield value
 	useEffect(() => {
 		if (!productMetafields?.length) return;
 
