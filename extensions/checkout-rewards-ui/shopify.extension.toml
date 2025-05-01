@@ -53,6 +53,12 @@ key = "freeGift"
 type = "shop"
 target = "shop"
 
+[[extensions.metafields]]
+namespace = "checkout_rewards"
+key = "discount_code"
+type = "shop"
+target = "shop"
+
 
 # Defines settings that will be collected from merchants installing
 # your extension. Learn more:

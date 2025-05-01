@@ -7,6 +7,17 @@ export const schema: GadgetModel = {
   type: "gadget/model-schema/v1",
   storageKey: "DataModel-Shopify-Shop",
   fields: {
+    checkoutRewardsDiscountCode: {
+      type: "string",
+      shopifyMetafield: {
+        privateMetafield: false,
+        namespace: "checkout_rewards",
+        key: "discount_code",
+        metafieldType: "single_line_text_field",
+        allowMultipleEntries: false,
+      },
+      storageKey: "dpvMS3ETwNb9",
+    },
     checkoutRewardsProduct: {
       type: "string",
       shopifyMetafield: {

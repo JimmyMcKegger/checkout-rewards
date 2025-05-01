@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef, useCallback } from "react";
+import { useEffect, useState, useCallback } from "react";
 import {
 	reactExtension,
 	Banner,
@@ -54,18 +54,17 @@ function Extension() {
 		);
 	}
 
-	// ref to prevent duplicate logs
-	const hasLoggedProductStatus = useRef(false);
-
-	// all metafields
-	const allMetaFields = useAppMetafields();
-	console.log("allMetaFields", allMetaFields);
-
 	// Get metafields
 	const pointsMetafields = useAppMetafields({
 		type: "customer",
 		namespace: "rewards",
 		key: "points",
+	});
+
+	const discountCodeMetafields = useAppMetafields({
+		type: "shop",
+		namespace: "checkout_rewards",
+		key: "discount_code",
 	});
 
 	const productMetafields = useAppMetafields({
@@ -187,26 +186,15 @@ function Extension() {
 		return () => clearTimeout(timer);
 	}, [customer, pointsMetafields, productMetafieldValue, product]);
 
-	// Log product status only once
-	useEffect(() => {
-		if (hasLoggedProductStatus.current) return;
-
-		hasLoggedProductStatus.current = true;
-		const shouldShowProduct = product && !isProductInCart;
-
-		console.log("Product available:", !!product);
-		console.log("Should show product:", shouldShowProduct);
-	}, [product, isProductInCart]);
-
 	// Predefined handlers using useCallback to avoid inline functions
 	const handleCheckboxChange = useCallback((newValue) => {
 		setHasAddedDiscountCode(newValue);
 
 		applyDiscountCodeChange({
-			code: "TEST",
+			code: discountCodeMetafields[0]?.metafield?.value,
 			type: newValue ? "addDiscountCode" : "removeDiscountCode",
 		});
-	}, [applyDiscountCodeChange]);
+	}, [applyDiscountCodeChange, discountCodeMetafields]);
 
 	const handleAddToCart = useCallback(() => {
 		if (!product || isAddingToCart) return;
@@ -221,9 +209,6 @@ function Extension() {
 					quantity: 1,
 				},
 			],
-		})
-		.then(() => {
-			// TODO: update state
 		})
 		.catch((error) => {
 			console.error("Cart update error:", error?.message || "Unknown error");
