@@ -6,7 +6,21 @@ import type { GadgetModel } from "gadget-server";
 export const schema: GadgetModel = {
   type: "gadget/model-schema/v1",
   storageKey: "DataModel-Shopify-Customer",
-  fields: {},
+  fields: {
+    points: {
+      type: "number",
+      shopifyMetafield: {
+        privateMetafield: false,
+        namespace: "rewards",
+        key: "points",
+        metafieldType: "number_integer",
+        allowMultipleEntries: false,
+      },
+      default: 0,
+      validations: { numberRange: { min: 0, max: null } },
+      storageKey: "HZn8SV0SSeU8",
+    },
+  },
   shopify: {
     fields: [
       "acceptsMarketing",
@@ -22,11 +36,9 @@ export const schema: GadgetModel = {
       "lastOrderName",
       "locale",
       "marketingOptInLevel",
-      "metafield",
       "multipassIdentifier",
       "note",
       "orders",
-      "ordersCount",
       "phone",
       "shop",
       "shopifyCreatedAt",
@@ -37,7 +49,6 @@ export const schema: GadgetModel = {
       "tags",
       "taxExempt",
       "taxExemptions",
-      "totalSpent",
       "verifiedEmail",
     ],
   },

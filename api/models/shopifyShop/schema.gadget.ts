@@ -6,7 +6,30 @@ import type { GadgetModel } from "gadget-server";
 export const schema: GadgetModel = {
   type: "gadget/model-schema/v1",
   storageKey: "DataModel-Shopify-Shop",
-  fields: {},
+  fields: {
+    checkoutRewardsDiscountCode: {
+      type: "string",
+      shopifyMetafield: {
+        privateMetafield: false,
+        namespace: "checkout_rewards",
+        key: "discount_code",
+        metafieldType: "single_line_text_field",
+        allowMultipleEntries: false,
+      },
+      storageKey: "dpvMS3ETwNb9",
+    },
+    checkoutRewardsProduct: {
+      type: "string",
+      shopifyMetafield: {
+        privateMetafield: false,
+        namespace: "checkout_rewards",
+        key: "freeGift",
+        metafieldType: "product_reference",
+        allowMultipleEntries: false,
+      },
+      storageKey: "PwSxMj65RJCe",
+    },
+  },
   shopify: {
     fields: [
       "address1",
@@ -20,7 +43,6 @@ export const schema: GadgetModel = {
       "checkoutShippingRates",
       "checkouts",
       "city",
-      "cookieConsentLevel",
       "country",
       "countryCode",
       "countryName",
@@ -29,13 +51,12 @@ export const schema: GadgetModel = {
       "customerAccountsV2",
       "customerEmail",
       "customers",
+      "discounts",
       "domain",
-      "eligibleForCardReaderGiveaway",
       "eligibleForPayments",
       "email",
       "enabledPresentmentCurrencies",
       "finances",
-      "forceSsl",
       "gdprRequests",
       "googleAppsDomain",
       "googleAppsLoginEnabled",
@@ -62,6 +83,8 @@ export const schema: GadgetModel = {
       "planName",
       "preLaunchEnabled",
       "primaryLocale",
+      "productVariants",
+      "products",
       "province",
       "provinceCode",
       "requiresExtraPaymentsAgreement",

@@ -6,7 +6,7 @@ export const settings: GadgetSettings = {
   plugins: {
     connections: {
       shopify: {
-        apiVersion: "2025-01",
+        apiVersion: "2025-04",
         enabledModels: [
           "shopifyBillingAddress",
           "shopifyCart",
@@ -16,8 +16,11 @@ export const settings: GadgetSettings = {
           "shopifyCheckoutLineItem",
           "shopifyCheckoutShippingRate",
           "shopifyCustomer",
+          "shopifyDiscount",
           "shopifyOrder",
           "shopifyOrderLineItem",
+          "shopifyProduct",
+          "shopifyProductVariant",
           "shopifyShippingAddress",
         ],
         type: "partner",
@@ -28,12 +31,17 @@ export const settings: GadgetSettings = {
           "read_products",
           "read_metaobject_definitions",
           "read_payment_customizations",
+          "write_discounts",
           "unauthenticated_read_checkouts",
           "unauthenticated_read_customer_tags",
           "unauthenticated_read_customers",
           "unauthenticated_read_metaobjects",
           "unauthenticated_read_product_inventory",
           "unauthenticated_read_product_tags",
+          "read_discounts",
+          "write_products",
+          "read_locales",
+          "unauthenticated_read_content",
         ],
       },
     },

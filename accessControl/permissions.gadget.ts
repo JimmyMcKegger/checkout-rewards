@@ -9,9 +9,16 @@ import type { GadgetPermissions } from "gadget-server";
 export const permissions: GadgetPermissions = {
   type: "gadget/permissions/v1",
   roles: {
-    "shopify-app-users": {
+    function: {
       storageKey: "Role-Shopify-App",
+      default: {
+        read: true,
+        action: true,
+      },
       models: {
+        session: {
+          read: true,
+        },
         shopifyBillingAddress: {
           read: {
             filter:
@@ -58,6 +65,20 @@ export const permissions: GadgetPermissions = {
             filter:
               "accessControl/filters/shopify/shopifyCustomer.gelly",
           },
+          actions: {
+            update: true,
+          },
+        },
+        shopifyDiscount: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyDiscount.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
         },
         shopifyGdprRequest: {
           read: {
@@ -81,6 +102,28 @@ export const permissions: GadgetPermissions = {
               "accessControl/filters/shopify/shopifyOrderLineItem.gelly",
           },
         },
+        shopifyProduct: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyProduct.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyProductVariant: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyProductVariant.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
         shopifyShippingAddress: {
           read: {
             filter:
@@ -94,6 +137,7 @@ export const permissions: GadgetPermissions = {
           actions: {
             install: true,
             reinstall: true,
+            savePrePurchaseProduct: true,
             uninstall: true,
             update: true,
           },
@@ -111,8 +155,12 @@ export const permissions: GadgetPermissions = {
         },
       },
       actions: {
+        createAutomaticAppDiscount: true,
         createCustomerPointsMetafield: true,
+        createDiscountCode: true,
+        queryFunctions: true,
         scheduledShopifySync: true,
+        writeToShopify: true,
       },
     },
     unauthenticated: {

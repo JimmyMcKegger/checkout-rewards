@@ -1,5 +1,12 @@
-import { applyParams, save, ActionOptions } from "gadget-server";
+import { applyParams, save, ActionOptions, preventCrossShopDataAccess, SavePrePuchaseProductActionContext } from "gadget-server";
 import { preventCrossShopDataAccess } from "gadget-server/shopify";
+
+// https://docs.gadget.dev/guides/actions/code#adding-params-to-model-actions
+export const params = {
+  productId: {
+    type: "string",
+  }
+};
 
 /** @type { ActionRun } */
 export const run = async ({ params, record, logger, api, connections }) => {
@@ -10,8 +17,7 @@ export const run = async ({ params, record, logger, api, connections }) => {
 
 /** @type { ActionOnSuccess } */
 export const onSuccess = async ({ params, record, logger, api, connections }) => {
-  logger.info("PARAMS", params);
-  logger.info("RECORD", record);
+  const { productId } = params;
 
   const response = await connections.shopify.current?.graphql(
     `mutation setMetafield($metafields: [MetafieldsSetInput!]!) {
@@ -33,18 +39,21 @@ export const onSuccess = async ({ params, record, logger, api, connections }) =>
     {
       metafields: [
         {
-          namespace: "rewards",
-          key: "points",
-          ownerId: `gid://shopify/Customer/${record.id}`,
-          type: "number_integer",
-          value: "0",
+          namespace: "checkout_rewards",
+          key: "freeGift",
+          ownerId: `gid://shopify/Shop/${record.id}`,
+          type: "product_reference",
+          value: productId,
         },
       ],
     }
   );
 
-  logger.info(response);
+  logger.info({ response }, "add metafield response");
 };
 
 /** @type { ActionOptions } */
-export const options = { actionType: "create" };
+export const options = {
+  actionType: "update",
+  triggers: { api: true },
+};
