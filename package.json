@@ -13,7 +13,8 @@
     "shopify:deploy:development": "yarn shopify:config:use:development && shopify app deploy",
     "shopify:deploy:production": "yarn shopify:config:use:production && shopify app deploy",
     "shopify:deploy": "yarn shopify:deploy:production",
-    "shopify:info": "shopify app info"
+    "shopify:info": "shopify app info",
+    "test": "vitest"
   },
   "dependencies": {
     "@gadget-client/checkout-rewards-app": "link:.gadget/client",
@@ -35,9 +36,15 @@
     "@types/node": "^20.17.7",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
+    "@vitejs/plugin-react-swc": "^3.9.0",
+    "dotenv": "^16.5.0",
     "typescript": "^5.7.2",
     "vite": "^5.4.15"
   },
-    "workspaces": ["extensions/*"],
-    "trustedDependencies": ["@shopify/plugin-cloudflare"]
+  "workspaces": [
+    "extensions/*"
+  ],
+  "trustedDependencies": [
+    "@shopify/plugin-cloudflare"
+  ]
 }
