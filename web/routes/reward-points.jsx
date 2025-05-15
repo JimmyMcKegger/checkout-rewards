@@ -2,87 +2,71 @@ import {
 	Page,
 	Text,
 	Card,
-	FormLayout,
 	TextField,
-	DatePicker,
-	Button,
 	InlineGrid,
-	Select,
 	Box,
-	Divider,
 	Banner,
-	Checkbox,
-	Layout,
-	Frame,
-	Loading,
 	BlockStack,
+	Spinner,
 } from "@shopify/polaris";
 import { useNavigate } from "@remix-run/react";
+import { useFindFirst } from "@gadgetinc/react";
+import { api } from "../api";
+
 
 export default function RewardPoints() {
 	const navigate = useNavigate();
 
-	const smUp = false;
+	const [{ data: shopData, fetching: isLoadingShop, error: shopError }] =
+		useFindFirst(api.shopifyShop, {
+			select: {
+				id: true,
+				currency: true,
+				moneyFormat: true,
+			},
+		});
+
+	console.log("SHOP DATA: ", shopData);
+	const currency = shopData?.currency || "USD";
 
 	return (
 		<Page
-			divider
-			primaryAction={{ content: "View on your store", disabled: true }}
-			secondaryActions={[
-				{
-					content: "Duplicate",
-					accessibilityLabel: "Secondary action label",
-					onAction: () => alert("Duplicate action"),
-				},
-			]}
+			title="Checkout rewards Points"
+			primaryAction={{ content: "Save", disabled: false }} // TODO: on save set metafields to hold points and amount of store currency
+			backAction={{
+				content: "Back",
+				onAction: () => navigate("/"),
+			}}
+			isLoading={isLoadingShop}
 		>
-			<BlockStack gap={{ xs: "800", sm: "400" }}>
-				<InlineGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="400">
-					<Box
-						as="section"
-						paddingInlineStart={{ xs: 400, sm: 0 }}
-						paddingInlineEnd={{ xs: 400, sm: 0 }}
-					>
-						<BlockStack gap="400">
-							<Text as="h3" variant="headingMd">
-								InterJambs
-							</Text>
-							<Text as="p" variant="bodyMd">
-								Interjambs are the rounded protruding bits of your puzzlie piece
-							</Text>
-						</BlockStack>
-					</Box>
-					<Card roundedAbove="sm">
-						<BlockStack gap="400">
-							<TextField label="Interjamb style" />
-							<TextField label="Interjamb ratio" />
-						</BlockStack>
-					</Card>
-				</InlineGrid>
-				{smUp ? <Divider /> : null}
-				<InlineGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="400">
-					<Box
-						as="section"
-						paddingInlineStart={{ xs: 400, sm: 0 }}
-						paddingInlineEnd={{ xs: 400, sm: 0 }}
-					>
-						<BlockStack gap="400">
-							<Text as="h3" variant="headingMd">
-								Dimensions
-							</Text>
-							<Text as="p" variant="bodyMd">
-								Interjambs are the rounded protruding bits of your puzzlie piece
-							</Text>
-						</BlockStack>
-					</Box>
-					<Card roundedAbove="sm">
-						<BlockStack gap="400">
-							<TextField label="Horizontal" />
-							<TextField label="Interjamb ratio" />
-						</BlockStack>
-					</Card>
-				</InlineGrid>
-			</BlockStack>
+			{shopError && <Banner status="critical">Error loading shop data</Banner>}
+			{shopData && (
+				<BlockStack gap={{ xs: "800", sm: "400" }}>
+					<InlineGrid columns={{ xs: "1fr", md: "2fr 5fr" }} gap="400">
+						<Box
+							as="section"
+							paddingInlineStart={{ xs: 400, sm: 0 }}
+							paddingInlineEnd={{ xs: 400, sm: 0 }}
+						>
+							<BlockStack gap="400">
+								<Text as="h3" variant="headingMd">
+									Reward Points
+								</Text>
+								<Text as="p" variant="bodyMd">
+									Set the number of points a customer will receive for which
+									denomination of currency.
+								</Text>
+							</BlockStack>
+						</Box>
+						<Card roundedAbove="sm">
+							<BlockStack gap="400">
+								<TextField label="Points rewarded" />
+								<TextField label={`${currency} value`} />
+							</BlockStack>
+						</Card>
+					</InlineGrid>
+				</BlockStack>
+			)}
 		</Page>
 	);
 }
