@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { Meta, Links, Scripts, ScrollRestoration } from "@remix-run/react";
 import { AppProvider } from "@shopify/polaris";
 import enTranslations from "@shopify/polaris/locales/en.json";
@@ -5,10 +6,10 @@ import {
   AppType,
   Provider as GadgetProvider,
 } from "@gadgetinc/react-shopify-app-bridge";
+import { api } from "./api";
 import "./app.css";
 import polarisStyles from "@shopify/polaris/build/esm/styles.css?url";
 import { Suspense } from "react";
-import { api } from "./api";
 import { AdaptorLink } from "./components/AdaptorLink";
 import { AuthenticatedApp } from "./components/App";
 import { FullPageSpinner } from "./components/FullPageSpinner";
@@ -58,6 +59,18 @@ export const Layout = ({ children }) => {
 };
 
 export default function App() {
+
+  // Page wasn't loading in the SHopify admin. Adding a ceck for the client
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  if (!isClient) {
+    return <FullPageSpinner />;
+  }
+
   return (
     <GadgetProvider
       type={AppType.Embedded}
