@@ -1,12 +1,10 @@
-import { AutoTable } from "@gadgetinc/react/auto/polaris";
-import { useEffect, useState } from "react";
-import { useGlobalAction } from "@gadgetinc/react";
 import { useNavigate } from "@remix-run/react";
 import {
 	Banner,
 	BlockStack,
 	Box,
 	Card,
+  Divider,
 	Layout,
 	Link,
 	Page,
@@ -29,12 +27,19 @@ export default function Index() {
 				</Layout.Section>
 
 				<Layout.Section>
-					<Card padding="0">
+					<Card padding="10">
 						<Box padding="400">
 							<Text variant="bodyMd" as="p">
-								Hello checkout rewards
+								Welcome to the Checkout Rewards App
 							</Text>
-
+              <Divider />
+							<Text variant="bodyMd" as="p">
+								To get started, please configure the number of {" "}
+								<Link onClick={() => navigate("/reward-points")}>
+									reward points
+								</Link>
+								{" "} awarded for each euro spent.
+							</Text>
 						</Box>
 					</Card>
 				</Layout.Section>
