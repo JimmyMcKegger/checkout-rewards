@@ -7,8 +7,9 @@ export function NavMenu() {
       <Link to="/" rel="home">
         Customer Information
       </Link>
-      <Link to="/reward-points">Reward Points</Link>
+      <Link to="/customers">Customers</Link>
       <Link to="/discounts">Discounts</Link>
+      <Link to="/reward-points">Reward Points</Link>
     </AppBridgeNavMenu>
   );
 }
