@@ -11,37 +11,32 @@ export const run = async ({ params, logger, api, connections }) => {
 	});
 
 	try {
-		// Validate required parameters
-		if (!params.title) {
+		// check parameters
+		if (
+			!params.title ||
+			!params.code ||
+			!params.discountType ||
+			!params.discountValue
+		) {
 			return {
 				success: false,
-				errors: { title: "Discount title is required" },
+				errors: {
+					paramsError:
+						"Discount title, code, discount type and discount value are required",
+				},
 			};
 		}
 
-		if (!params.code) {
-			return {
-				success: false,
-				errors: { code: "Discount code is required" },
-			};
-		}
-
-		if (!params.discountValue) {
-			return {
-				success: false,
-				errors: { discountValue: "Discount value is required" },
-			};
-		}
-
-		// Check if Shopify connection is available
+		// check Shopify connection
 		if (!connections.shopify.current) {
 			return {
 				success: false,
-				apiError: "Not connected to Shopify. Please ensure your app is properly installed on your store.",
+				apiError:
+					"Not connected to Shopify. Please ensure your app is properly installed on your store.",
 			};
 		}
 
-		// Calculate discount value based on type
+		// calculate discount value based on type
 		let discountValue;
 		if (params.discountType === "percentage") {
 			discountValue = {
@@ -54,11 +49,19 @@ export const run = async ({ params, logger, api, connections }) => {
 				},
 			};
 		}
+		const minimumRequirement = params?.minimumRequirement ? {
+			subtotal: {
+				greaterThanOrEqualToSubtotal:
+					params.minimumRequirement,
+			},
+		} : null;
 
 		// Create basic discount structure
 		const basicCodeDiscount = {
 			title: params.title,
-			code: params.code.toUpperCase() || "CHECKOUTREWARDS" + Math.floor(Math.random() * 1000),
+			code:
+				params.code.toUpperCase() ||
+				"CHECKOUTREWARDS" + Math.floor(Math.random() * 1000),
 			startsAt: params.startDate || new Date().toISOString(),
 			endsAt: params.endDate || null,
 			customerSelection: {
@@ -69,23 +72,12 @@ export const run = async ({ params, logger, api, connections }) => {
 				items: { all: true },
 			},
 			appliesOncePerCustomer: params.onePerCustomer === true,
+			minimumRequirement: minimumRequirement || null,
+			usageLimit: parseInt(params?.usageLimit) || null,
 		};
 
-		// Add minimum purchase requirement if provided
-		if (params.minimumPurchase && parseFloat(params.minimumPurchase) > 0) {
-			basicCodeDiscount.minimumRequirement = {
-				subtotal: {
-					greaterThanOrEqualToSubtotal: params.minimumPurchase,
-				},
-			};
-		}
-
-		// Add usage limit if provided
-		if (params.usageLimit && parseInt(params.usageLimit) > 0) {
-			basicCodeDiscount.usageLimit = parseInt(params.usageLimit);
-		}
-
-		// Mutation for creating a discount code
+		// discountCodeBasicCreate mutation
+		// https://shopify.dev/docs/api/admin-graphql/latest/mutations/discountCodeBasicCreate
 		const mutation = `
 		mutation discountCodeBasicCreate($basicCodeDiscount: DiscountCodeBasicInput!) {
 			discountCodeBasicCreate(basicCodeDiscount: $basicCodeDiscount) {
@@ -112,7 +104,6 @@ export const run = async ({ params, logger, api, connections }) => {
 			}
 		}`;
 
-		// Execute mutation
 		const response = await connections.shopify.current.graphql(mutation, {
 			basicCodeDiscount,
 		});
@@ -129,27 +120,25 @@ export const run = async ({ params, logger, api, connections }) => {
 			};
 		}
 
-		// Check for userErrors
+		// check for userErrors
 		const userErrors = response.data?.discountCodeBasicCreate?.userErrors || [];
 		if (userErrors.length > 0) {
-			// Format field errors for the UI
-			const errors = userErrors.reduce((acc, error) => {
-				const fieldName = error.field?.split(".").pop() || "general";
-				acc[fieldName] = error.message;
-				return acc;
-			}, {});
+			// all error messages
+			const errors = userErrors.map(error => error.message);
 
 			return {
 				success: false,
 				errors,
-				apiError: userErrors.map((err) => `${err.field}: ${err.message}`).join("; "),
+				apiError: errors.join(", "),
 			};
 		}
 
 		// discount details
-		const codeDiscountNode = response.data?.discountCodeBasicCreate?.codeDiscountNode;
+		const codeDiscountNode =
+			response.data?.discountCodeBasicCreate?.codeDiscountNode;
 		const discountId = codeDiscountNode?.id || null;
-		const discountCode = codeDiscountNode?.codeDiscount?.codes?.nodes?.[0]?.code || params.code;
+		const discountCode =
+			codeDiscountNode?.codeDiscount?.codes?.nodes?.[0]?.code || params.code;
 
 		// success response
 		return {
@@ -158,10 +147,9 @@ export const run = async ({ params, logger, api, connections }) => {
 			code: discountCode,
 			message: `Discount code "${discountCode}" created successfully.`,
 			title: codeDiscountNode?.codeDiscount?.title || params.title,
-			status: codeDiscountNode?.codeDiscount?.status || 'ACTIVE',
-			summary: codeDiscountNode?.codeDiscount?.summary || '',
+			status: codeDiscountNode?.codeDiscount?.status || "ACTIVE",
+			summary: codeDiscountNode?.codeDiscount?.summary || "",
 		};
-
 	} catch (error) {
 		return {
 			success: false,
@@ -180,7 +168,7 @@ export const params = {
 	discountType: { type: "string" },
 	discountValue: { type: "string" },
 	pointsRequired: { type: "string" },
-	minimumPurchase: { type: "string", optional: true },
+	minimumRequirement: { type: "string", optional: true },
 	usageLimit: { type: "string", optional: true },
 	onePerCustomer: { type: "boolean", optional: true },
 	startDate: { type: "string", optional: true },
@@ -226,17 +214,20 @@ export const onSuccess = async ({
 			}
 		`;
 
-		const response = await connections.shopify.current.graphql(metafieldsMutation, {
-			metafields: [
-				{
-					namespace: "checkout_rewards",
-					key: "discount_code",
-					ownerId: `gid://shopify/Shop/${shopId}`,
-					type: "single_line_text_field",
-					value: discountCode
-				}
-			]
-		});
+		const response = await connections.shopify.current.graphql(
+			metafieldsMutation,
+			{
+				metafields: [
+					{
+						namespace: "checkout_rewards",
+						key: "discount_code",
+						ownerId: `gid://shopify/Shop/${shopId}`,
+						type: "single_line_text_field",
+						value: discountCode,
+					},
+				],
+			}
+		);
 
 		// log errors
 		if (response.data?.metafieldsSet?.userErrors?.length > 0) {
@@ -249,7 +240,7 @@ export const onSuccess = async ({
 	} catch (error) {
 		logger.error({
 			error: error.message,
-			stack: error.stack
-		}, "Error in onSuccess function");
+			fullError: error,
+		});
 	}
 };

@@ -5,12 +5,8 @@ import {   Page,
   TextField,
   DatePicker,
   Button,
-  Select,
   Banner,
-  Checkbox,
   Layout,
-  Frame,
-  Loading,
   BlockStack } from "@shopify/polaris";
 import { useNavigate } from "@remix-run/react";
 import { useState, useEffect, useCallback } from "react";
@@ -58,7 +54,7 @@ export default function Discounts() {
         discountType: discountType,
         discountValue: discountValue,
         pointsRequired: pointsRequired,
-        minimumPurchase: null,
+        minimumRequirement: null,
         usageLimit: null,
         onePerCustomer: false,
         startDate: startDate.toISOString(),
@@ -66,7 +62,7 @@ export default function Discounts() {
       });
     } catch (err) {
       console.error("Error creating discount:", err);
-      setFormError(err.message || "An error occurred");
+      setFormError(err.message || "No Error Message");
     } finally {
       setIsLoading(false);
     }
@@ -84,23 +80,6 @@ export default function Discounts() {
       }
     }
   }, [data]);
-
-  // Date handling callbacks
-  const handleStartDateChange = useCallback((dates) => {
-    setStartDate(dates.start);
-  }, []);
-
-  const handleEndDateChange = useCallback((dates) => {
-    setEndDate(dates.end);
-  }, []);
-
-  const handleMonthStartChange = useCallback((month, year) => {
-    setStartMonthYear({ month, year });
-  }, []);
-
-  const handleMonthEndChange = useCallback((month, year) => {
-    setEndMonthYear({ month, year });
-  }, []);
 
   return (
     <Page
@@ -162,8 +141,8 @@ export default function Discounts() {
                     <DatePicker
                       month={startMonth}
                       year={startYear}
-                      onChange={handleStartDateChange}
-                      onMonthChange={handleMonthStartChange}
+                      onChange={dates => setStartDate(dates.start)}
+                      onMonthChange={(month, year) => setStartMonthYear({ month, year })}
                       selected={startDate ? {start: startDate, end: startDate} : undefined}
                     />
                   </div>
@@ -173,8 +152,8 @@ export default function Discounts() {
                     <DatePicker
                       month={endMonth}
                       year={endYear}
-                      onChange={handleEndDateChange}
-                      onMonthChange={handleMonthEndChange}
+                      onChange={dates => setEndDate(dates.start)}
+                      onMonthChange={(month, year) => setEndMonthYear({ month, year })}
                       selected={endDate ? {start: endDate, end: endDate} : undefined}
                     />
                   </div>
