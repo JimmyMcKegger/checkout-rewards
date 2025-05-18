@@ -3,13 +3,8 @@ export const run = async ({ params, logger, api, connections }) => {
 	logger.info("Creating customer points metafield definition in Shopify");
 
 	try {
-		// Get the current shop ID from the Shopify connection
-		const shopId = connections.shopify.currentShop?.id?.toString();
-
-		if (!shopId) {
-			logger.error("No shop ID available in current context");
-			throw new Error("No shop ID available");
-		}
+		const shopId = connections.shopify.currentShopId;
+		logger.info(`shopId: ${shopId}`);
 
 		// https://shopify.dev/docs/api/admin-graphql/2025-04/mutations/metafieldDefinitionCreate?language=remix
 		// CreateMetafieldDefinition mutation
@@ -37,20 +32,15 @@ export const run = async ({ params, logger, api, connections }) => {
 				description: "Customer reward points",
 				type: "number_integer",
 				ownerType: "CUSTOMER",
-        pin: true
+				pin: true,
 			},
 		};
 
-		const result = await api.enqueue(api.writeToShopify, {
-			shopId,
-			mutation,
-			variables,
-		});
+		const result = await shopify.graphql(query, variables);
 
-		logger.info("Customer points metafield definition created!", {
+		logger.info("CreateMetafieldDefinition result", {
 			result,
 		});
-    // save the metafield definition to the database
 
 		return result;
 	} catch (error) {

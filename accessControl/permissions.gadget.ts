@@ -159,6 +159,7 @@ export const permissions: GadgetPermissions = {
         createCustomerPointsMetafield: true,
         createDiscountCode: true,
         queryFunctions: true,
+        queryMetafieldDefinitions: true,
         scheduledShopifySync: true,
         writeToShopify: true,
       },
