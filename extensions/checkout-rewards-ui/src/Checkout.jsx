@@ -38,10 +38,6 @@ function Extension() {
 	const [hasAddedDiscountCode, setHasAddedDiscountCode] = useState(false);
 	const [customerPoints, setCustomerPoints] = useState(0);
 	const [isLoading, setIsLoading] = useState(true);
-	const [product, setProduct] = useState(null);
-	const [isAddingToCart, setIsAddingToCart] = useState(false);
-	const [productMetafieldValue, setProductMetafieldValue] = useState(null);
-	const [isProductInCart, setIsProductInCart] = useState(false);
 
 	// if customer isn't logged in return early
 	const isLoggedIn = !!customer;
@@ -54,7 +50,7 @@ function Extension() {
 		);
 	}
 
-	// Get metafields
+	// get metafields
 	const pointsMetafields = useAppMetafields({
 		type: "customer",
 		namespace: "rewards",
@@ -67,161 +63,47 @@ function Extension() {
 		key: "discount_code",
 	});
 
-	const productMetafields = useAppMetafields({
-		type: "shop",
-		namespace: "checkout_rewards",
-		key: "freeGift",
-	});
-
-	// Extract customer points from metafields
+	// customer points from metafields
 	useEffect(() => {
-		if (!customer || !pointsMetafields?.length) return;
+		if (isLoggedIn) {
+			const customerId = customer.id;
+			const metafield = pointsMetafields.find(
+				({ target }) => `gid://shopify/Customer/${target.id}` === customerId
+			);
 
-		const customerId = customer.id;
-		const metafield = pointsMetafields.find(
-			({ target }) => `gid://shopify/Customer/${target.id}` === customerId
-		);
-
-		if (metafield?.metafield?.value) {
-			setCustomerPoints(parseInt(metafield.metafield.value) || 0);
+			if (metafield?.metafield?.value) {
+				setCustomerPoints(parseInt(metafield.metafield.value) || 0);
+			}
 		}
 	}, [customer, pointsMetafields]);
 
-	// product metafield value
 	useEffect(() => {
-		if (!productMetafields?.length) return;
+		// delay then load extention
+		const delay = setTimeout(() => {
+			setIsLoading(false);
+		}, 1000);
+		// cleanup
+		// https://react.dev/reference/react/useEffect#my-cleanup-logic-runs-even-though-my-component-didnt-unmount
+		return () => clearTimeout(delay);
+	}, []);
 
-		const value = productMetafields[0]?.metafield?.value;
-		if (value) {
-			setProductMetafieldValue(value);
-		}
-	}, [productMetafields]);
+	// handlers using useCallbacks
+	const handleCheckboxChange = useCallback(
+		(newValue) => {
+			setHasAddedDiscountCode(newValue);
+			console.log("handleCheckboxChange newValue", newValue);
 
-	// product data
-	useEffect(() => {
-		if (!productMetafieldValue) return;
-
-		let isMounted = true;
-
-		const fetchProduct = () => {
-			query(
-				`query getProduct($id: ID!) {
-					product(id: $id) {
-						id
-						title
-						images(first: 1) {
-							nodes {
-								id
-								url
-							}
-						}
-						variants(first: 1) {
-							nodes {
-								id
-								title
-								price {
-									amount
-									currencyCode
-								}
-							}
-						}
-					}
-				}`,
-				{
-					variables: {
-						id: productMetafieldValue,
-					},
-				}
-			)
-			.then(({ data }) => {
-				if (isMounted && data?.product) {
-					setProduct(data.product);
-				}
-			})
-			.catch((error) => {
-				console.error("Product fetch error:", error?.message || "Unknown error");
+			applyDiscountCodeChange({
+				code: discountCodeMetafields[0]?.metafield?.value,
+				type: newValue ? "addDiscountCode" : "removeDiscountCode",
 			});
-		};
-
-		fetchProduct();
-
-		return () => {
-			isMounted = false;
-		};
-	}, [productMetafieldValue, query]);
-
-	// check if product is already in cart
-	useEffect(() => {
-		if (!product || !cartLines?.lines) {
-			setIsProductInCart(false);
-			return;
-		}
-
-		const productVariantId = product.variants?.nodes[0]?.id;
-		const found = cartLines.lines.some(
-			line => line.merchandise?.id === productVariantId
-		);
-
-		setIsProductInCart(found);
-	}, [product, cartLines]);
-
-	// loading when data is ready
-	useEffect(() => {
-		const dataIsReady =
-			!customer ||
-			(customer && pointsMetafields && pointsMetafields.length > 0);
-
-		const productIsReady =
-			!productMetafieldValue ||
-			(productMetafieldValue && product);
-
-		if (dataIsReady && productIsReady) {
-			setIsLoading(false);
-		}
-
-		const timer = setTimeout(() => {
-			setIsLoading(false);
-		}, 3000);
-
-		return () => clearTimeout(timer);
-	}, [customer, pointsMetafields, productMetafieldValue, product]);
-
-	// Predefined handlers using useCallback to avoid inline functions
-	const handleCheckboxChange = useCallback((newValue) => {
-		setHasAddedDiscountCode(newValue);
-
-		applyDiscountCodeChange({
-			code: discountCodeMetafields[0]?.metafield?.value,
-			type: newValue ? "addDiscountCode" : "removeDiscountCode",
-		});
-	}, [applyDiscountCodeChange, discountCodeMetafields]);
-
-	const handleAddToCart = useCallback(() => {
-		if (!product || isAddingToCart) return;
-
-		setIsAddingToCart(true);
-
-		applyCartLineChanges({
-			type: "addCartLines",
-			lines: [
-				{
-					merchandiseId: product.variants.nodes[0].id,
-					quantity: 1,
-				},
-			],
-		})
-		.catch((error) => {
-			console.error("Cart update error:", error?.message || "Unknown error");
-		})
-		.finally(() => {
-			setIsAddingToCart(false);
-		});
-	}, [product, isAddingToCart, applyCartLineChanges]);
+		},
+		[applyDiscountCodeChange, discountCodeMetafields]
+	);
 
 	// rendering values
 	const customerName = customer?.firstName || customer?.email || "";
 	const welcomeMessage = `${translate("welcomeBackMessage")}, ${customerName}!`;
-	const shouldShowProduct = product && !isProductInCart;
 
 	// Loading state
 	if (isLoading) {
@@ -234,7 +116,7 @@ function Extension() {
 		);
 	}
 
-	// renders for logged in customers (rewards and product)
+	// renders for logged in customers rewards
 	return (
 		<BlockStack spacing="loose">
 			{/* Rewards */}
@@ -257,43 +139,6 @@ function Extension() {
 					</Banner>
 				)}
 			</BlockStack>
-
-			{/* Product section - if product exists and is not in cart */}
-			{shouldShowProduct && (
-				<BlockStack spacing="loose">
-					<Divider />
-					<Heading level={2}>You might also like</Heading>
-					<InlineLayout
-						spacing="base"
-						columns={[64, "fill", "auto"]}
-						blockAlignment="center"
-					>
-						<Image
-							border="base"
-							borderWidth="base"
-							borderRadius="loose"
-							source={product.images.nodes[0]?.url}
-							description={product.title}
-							aspectRatio={1}
-						/>
-						<BlockStack spacing="none">
-							<Text size="medium" fontWeight="bold">
-								{product.title}
-							</Text>
-							<Text size="medium" appearance="subdued">
-								{product.variants.nodes[0]?.price.amount} {product.variants.nodes[0]?.price.currencyCode}
-							</Text>
-						</BlockStack>
-						<Button
-							kind="secondary"
-							disabled={isAddingToCart}
-							onPress={handleAddToCart}
-						>
-							Add
-						</Button>
-					</InlineLayout>
-				</BlockStack>
-			)}
 		</BlockStack>
 	);
 }
