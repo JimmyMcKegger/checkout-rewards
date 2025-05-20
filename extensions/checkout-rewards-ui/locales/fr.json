@@ -1,6 +1,5 @@
 {
   "welcome": "Bienvenue au extension {{target}}!",
   "notLoggedIn": "Si vous êtes un client de retour, connecter pour voir vos récompenses",
-  "welcomeBackMessage": "Bienvenue",
-  "offerDiscount": "Voulez-vous 10% de réduction?"
+  "welcomeBackMessage": "Bienvenue"
 }

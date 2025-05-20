@@ -1,6 +1,5 @@
 {
   "welcome": "Welcome to Checkout Rewards",
   "notLoggedIn": "Please log in to see your rewards",
-  "welcomeBackMessage": "Welcome back",
-  "offerDiscount": "Would you like 10% off?"
+  "welcomeBackMessage": "Welcome back"
 }

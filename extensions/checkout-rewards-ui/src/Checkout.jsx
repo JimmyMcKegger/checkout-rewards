@@ -20,7 +20,6 @@ import {
 	InlineLayout,
 } from "@shopify/ui-extensions-react/checkout";
 
-// TODO: move this above reductions so the code doesn't shift layout
 const target = "purchase.checkout.reductions.render-after";
 
 export default reactExtension(target, () => <Extension />);
@@ -63,29 +62,41 @@ function Extension() {
 		key: "discount_code",
 	});
 
-	// customer points from metafields
+	const percentageValueMetafields = useAppMetafields({
+		type: "shop",
+		namespace: "checkout_rewards",
+		key: "percentage_value",
+	});
+
+	const pointsRequiredMetafields = useAppMetafields({
+		type: "shop",
+		namespace: "checkout_rewards",
+		key: "points_required",
+	});
+
+	// combined effect for loading and customer points
 	useEffect(() => {
+		// Process customer points from metafields
 		if (isLoggedIn) {
 			const customerId = customer.id;
-			const metafield = pointsMetafields.find(
+			const pointsMetafieldValue = pointsMetafields.find(
 				({ target }) => `gid://shopify/Customer/${target.id}` === customerId
 			);
 
-			if (metafield?.metafield?.value) {
-				setCustomerPoints(parseInt(metafield.metafield.value) || 0);
+			if (pointsMetafieldValue?.metafield?.value) {
+				setCustomerPoints(parseInt(pointsMetafieldValue.metafield.value) || 0);
 			}
 		}
-	}, [customer, pointsMetafields]);
 
-	useEffect(() => {
-		// delay then load extention
+		// loading delay
 		const delay = setTimeout(() => {
 			setIsLoading(false);
-		}, 1000);
-		// cleanup
+		}, 300);
+
+		// cleanup function
 		// https://react.dev/reference/react/useEffect#my-cleanup-logic-runs-even-though-my-component-didnt-unmount
 		return () => clearTimeout(delay);
-	}, []);
+	}, [customer, pointsMetafields, isLoggedIn]);
 
 	// handlers using useCallbacks
 	const handleCheckboxChange = useCallback(
@@ -97,6 +108,7 @@ function Extension() {
 				code: discountCodeMetafields[0]?.metafield?.value,
 				type: newValue ? "addDiscountCode" : "removeDiscountCode",
 			});
+
 		},
 		[applyDiscountCodeChange, discountCodeMetafields]
 	);
@@ -131,7 +143,7 @@ function Extension() {
 						checked={hasAddedDiscountCode}
 						onChange={handleCheckboxChange}
 					>
-						{translate("offerDiscount")}
+						{`Redeem ${pointsRequiredMetafields[0]?.metafield?.value} points for a ${percentageValueMetafields[0]?.metafield?.value}% discount?`}
 					</Checkbox>
 				) : (
 					<Banner status="warning">

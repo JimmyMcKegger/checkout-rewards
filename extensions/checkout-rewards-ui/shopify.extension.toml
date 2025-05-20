@@ -53,6 +53,18 @@ key = "discount_code"
 type = "shop"
 target = "shop"
 
+[[extensions.metafields]]
+namespace = "checkout_rewards"
+key = "percentage_value"
+type = "shop"
+target = "shop"
+
+[[extensions.metafields]]
+namespace = "checkout_rewards"
+key = "points_required"
+type = "shop"
+target = "shop"
+
 
 # Defines settings that will be collected from merchants installing
 # your extension. Learn more:
