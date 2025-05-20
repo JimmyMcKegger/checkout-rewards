@@ -18,6 +18,7 @@ export default function Index() {
 	const [metaDefinitionExists, setMetaDefinitionExists] = useState(false);
 	const [storeMetafildDefinition, setStoreMetafildDefinition] = useState("");
 	const [metafieldResult, setMetafieldResult] = useState(null);
+	const [showBanner, setShowBanner] = useState(true);
 
 	const [
 		{ data: createData, fetching: createFetching, error: createError },
@@ -73,11 +74,13 @@ export default function Index() {
 		<Page title="App">
 			<Layout>
 				<Layout.Section>
-					<Banner tone="success">
-						<Text variant="bodyMd" as="p">
-							Successfully connected your Gadget app to Shopify
-						</Text>
-					</Banner>
+					{showBanner && (
+						<Banner tone="success" onDismiss={() => setShowBanner(false)}>
+							<Text variant="bodyMd" as="p">
+								Successfully connected your Gadget app to Shopify
+							</Text>
+						</Banner>
+					)}
 				</Layout.Section>
 
 				<Layout.Section>
