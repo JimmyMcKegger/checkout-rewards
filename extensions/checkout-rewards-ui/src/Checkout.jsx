@@ -37,6 +37,7 @@ function Extension() {
 	const [hasAddedDiscountCode, setHasAddedDiscountCode] = useState(false);
 	const [customerPoints, setCustomerPoints] = useState(0);
 	const [isLoading, setIsLoading] = useState(true);
+	const [checkboxEnabled, setCheckboxEnabled] = useState(false);
 
 	// if customer isn't logged in return early
 	const isLoggedIn = !!customer;
@@ -76,7 +77,7 @@ function Extension() {
 
 	// combined effect for loading and customer points
 	useEffect(() => {
-		// Process customer points from metafields
+		// customer points from metafields
 		if (isLoggedIn) {
 			const customerId = customer.id;
 			const pointsMetafieldValue = pointsMetafields.find(
@@ -84,7 +85,20 @@ function Extension() {
 			);
 
 			if (pointsMetafieldValue?.metafield?.value) {
-				setCustomerPoints(parseInt(pointsMetafieldValue.metafield.value) || 0);
+				const customerPoints =
+					parseInt(pointsMetafieldValue.metafield.value) || 0;
+				const requiredPoints =
+					parseInt(pointsRequiredMetafields[0]?.metafield?.value) || 0;
+
+				setCustomerPoints(customerPoints);
+
+				// console.log("Customer points:", customerPoints);
+				// console.log("Required points:", requiredPoints);
+				// console.log("customerPoints >= requiredPoints:", customerPoints >= requiredPoints);
+
+				if (customerPoints >= requiredPoints) {
+					setCheckboxEnabled(true);
+				}
 			}
 		}
 
@@ -108,7 +122,6 @@ function Extension() {
 				code: discountCodeMetafields[0]?.metafield?.value,
 				type: newValue ? "addDiscountCode" : "removeDiscountCode",
 			});
-
 		},
 		[applyDiscountCodeChange, discountCodeMetafields]
 	);
@@ -117,7 +130,7 @@ function Extension() {
 	const customerName = customer?.firstName || customer?.email || "";
 	const welcomeMessage = `${translate("welcomeBackMessage")}, ${customerName}!`;
 
-	// Loading state
+	// loading state
 	if (isLoading) {
 		return (
 			<BlockStack spacing="loose">
@@ -142,8 +155,18 @@ function Extension() {
 					<Checkbox
 						checked={hasAddedDiscountCode}
 						onChange={handleCheckboxChange}
+						disabled={!checkboxEnabled}
 					>
-						{`Redeem ${pointsRequiredMetafields[0]?.metafield?.value} points for a ${percentageValueMetafields[0]?.metafield?.value}% discount?`}
+						{checkboxEnabled && (
+							<Text>
+								{`Redeem ${pointsRequiredMetafields[0]?.metafield?.value} points for a ${percentageValueMetafields[0]?.metafield?.value}% discount?`}
+							</Text>
+						)}
+						{!checkboxEnabled && (
+							<Text>
+								{`Next reward available at ${pointsRequiredMetafields[0]?.metafield?.value} points`}
+							</Text>
+						)}
 					</Checkbox>
 				) : (
 					<Banner status="warning">
