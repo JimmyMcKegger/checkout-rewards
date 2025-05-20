@@ -18,16 +18,27 @@ export const schema: GadgetModel = {
       },
       storageKey: "dpvMS3ETwNb9",
     },
-    checkoutRewardsProduct: {
+    checkoutRewardsDiscountPercentageValue: {
       type: "string",
       shopifyMetafield: {
         privateMetafield: false,
         namespace: "checkout_rewards",
-        key: "freeGift",
-        metafieldType: "product_reference",
+        key: "percentage_value",
+        metafieldType: "number_integer",
         allowMultipleEntries: false,
       },
-      storageKey: "PwSxMj65RJCe",
+      storageKey: "FL3KSh1dtBJL",
+    },
+    checkoutRewardsPointsRequired: {
+      type: "string",
+      shopifyMetafield: {
+        privateMetafield: false,
+        namespace: "checkout_rewards",
+        key: "points_required",
+        metafieldType: "number_integer",
+        allowMultipleEntries: false,
+      },
+      storageKey: "UdxJVCUgqFeM",
     },
   },
   shopify: {

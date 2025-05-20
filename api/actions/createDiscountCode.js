@@ -186,14 +186,15 @@ export const onSuccess = async ({
 	try {
 		const shopId = connections.shopify.currentShop.id;
 
-		// TODO: save the discount code's % and point cost into metafields
-
 		// the discount code
 		const discountCode = record?.code || params.code;
-		if (!discountCode) {
-			logger.error("No discount code found");
-			return;
-		}
+		logger.info(`discountCode: ${discountCode}`);
+
+		const discountPercentageValue = params.discountValue;
+		logger.info(`discountPercentageValue: ${discountPercentageValue}`);
+
+		const pointsRequired = params.pointsRequired;
+		logger.info(`pointsRequired: ${pointsRequired}`);
 
 		// set the metafield
 		const metafieldsMutation = `
@@ -223,11 +224,27 @@ export const onSuccess = async ({
 						key: "discount_code",
 						ownerId: `gid://shopify/Shop/${shopId}`,
 						type: "single_line_text_field",
-						value: discountCode,
+						value: `${discountCode}`,
+					},
+					{
+						namespace: "checkout_rewards",
+						key: "percentage_value",
+						ownerId: `gid://shopify/Shop/${shopId}`,
+						type: "number_integer",
+						value: `${discountPercentageValue}`,
+					},
+					{
+						namespace: "checkout_rewards",
+						key: "points_required",
+						ownerId: `gid://shopify/Shop/${shopId}`,
+						type: "number_integer",
+						value: `${pointsRequired}`,
 					},
 				],
 			}
 		);
+
+		logger.info(`response: ${JSON.stringify(response)}`);
 
 		// log errors
 		if (response.data?.metafieldsSet?.userErrors?.length > 0) {
@@ -235,6 +252,7 @@ export const onSuccess = async ({
 			logger.error({ errors }, "Failed to create metafield");
 			return;
 		}
+
 
 		logger.info("Successfully saved discount code to shop metafield");
 	} catch (error) {
