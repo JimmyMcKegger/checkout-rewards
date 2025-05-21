@@ -26,7 +26,6 @@ export default function Customers() {
 				<Layout.Section>
 					<Card padding="0">
 						{/* use Autocomponents to build UI quickly: https://docs.gadget.dev/guides/frontend/autocomponents  */}
-						// points needs to be teh customer metafield rewards.points
 						<AutoTable
 							model={api.shopifyCustomer}
 							columns={["id", "firstName", "lastName", "email", "points"]}

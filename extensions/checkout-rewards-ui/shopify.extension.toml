@@ -15,7 +15,6 @@ type = "ui_extension"
 # and the file that contains your extension’s source code. Learn more:
 # https://shopify.dev/docs/api/checkout-ui-extensions/unstable/extension-targets-overview
 
-# TODO: move extention target above discount code box
 [[extensions.targeting]]
 module = "./src/Checkout.jsx"
 target = "purchase.checkout.reductions.render-after"
