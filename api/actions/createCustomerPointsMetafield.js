@@ -36,7 +36,7 @@ export const run = async ({ params, logger, api, connections }) => {
 			},
 		};
 
-		const result = await shopify.graphql(query, variables);
+		const result = await shopify.graphql(mutation, variables);
 
 		logger.info("CreateMetafieldDefinition result", {
 			result,
