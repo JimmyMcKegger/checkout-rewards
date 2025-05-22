@@ -11,7 +11,6 @@ import {
 	useAppMetafields,
 	useInstructions,
 	useApplyDiscountCodeChange,
-	useApplyCartLinesChange,
 	useCartLines,
 	Heading,
 	Image,
@@ -20,18 +19,31 @@ import {
 	InlineLayout,
 } from "@shopify/ui-extensions-react/checkout";
 
-const target = "purchase.checkout.reductions.render-after";
+// const target = "purchase.checkout.reductions.render-after";
+// export default reactExtension(target, () => <Extension />);
 
-export default reactExtension(target, () => <Extension />);
+// Checkotu page configuration
+const checkoutRender = reactExtension(
+	"purchase.checkout.reductions.render-after",
+	() => <CheckoutExtension />
+);
+export { checkoutRender };
 
-function Extension() {
+// Thank you page configuration
+const thankYouRender = reactExtension(
+	"purchase.thank-you.customer-information.render-after",
+	() => <ThankYouExtension />
+);
+export { thankYouRender };
+
+function CheckoutExtension() {
+	// CHECKOUT PAGE
 	const translate = useTranslate();
 	const { query } = useApi();
 	const customer = useCustomer();
 	const cartLines = useCartLines();
 	const { discounts } = useInstructions() || {};
 	const applyDiscountCodeChange = useApplyDiscountCodeChange();
-	const applyCartLineChanges = useApplyCartLinesChange();
 
 	// State management
 	const [hasAddedDiscountCode, setHasAddedDiscountCode] = useState(false);
@@ -39,16 +51,8 @@ function Extension() {
 	const [isLoading, setIsLoading] = useState(true);
 	const [checkboxEnabled, setCheckboxEnabled] = useState(false);
 
-	// if customer isn't logged in return early
+	// if customer is logged in
 	const isLoggedIn = !!customer;
-
-	if (!isLoggedIn) {
-		return (
-			<Banner title={translate("welcome")} status="info">
-				<Text size="medium">{translate("notLoggedIn")}</Text>
-			</Banner>
-		);
-	}
 
 	// get metafields
 	const pointsMetafields = useAppMetafields({
@@ -92,10 +96,6 @@ function Extension() {
 
 				setCustomerPoints(customerPoints);
 
-				// console.log("Customer points:", customerPoints);
-				// console.log("Required points:", requiredPoints);
-				// console.log("customerPoints >= requiredPoints:", customerPoints >= requiredPoints);
-
 				if (customerPoints >= requiredPoints) {
 					setCheckboxEnabled(true);
 				}
@@ -110,7 +110,7 @@ function Extension() {
 		// cleanup function
 		// https://react.dev/reference/react/useEffect#my-cleanup-logic-runs-even-though-my-component-didnt-unmount
 		return () => clearTimeout(delay);
-	}, [customer, pointsMetafields, isLoggedIn]);
+	}, [customer, pointsMetafields, isLoggedIn, pointsRequiredMetafields]);
 
 	// handlers using useCallbacks
 	const handleCheckboxChange = useCallback(
@@ -130,50 +130,142 @@ function Extension() {
 	const customerName = customer?.firstName || customer?.email || "";
 	const welcomeMessage = `${translate("welcomeBackMessage")}, ${customerName}!`;
 
-	// loading state
-	if (isLoading) {
-		return (
-			<BlockStack spacing="loose">
-				<Banner title="Checkout Rewards">
-					<Text>Loading rewards...</Text>
-				</Banner>
-			</BlockStack>
-		);
-	}
-
-	// renders for logged in customers rewards
 	return (
 		<BlockStack spacing="loose">
-			{/* Rewards */}
-			<BlockStack border="dotted" padding="tight">
-				<Banner title="Checkout Rewards">
-					<Text>{welcomeMessage}</Text>
+			{!isLoggedIn && (
+				<Banner title={translate("welcome")} status="info">
+					<Text size="medium">{translate("notLoggedIn")}</Text>
 				</Banner>
-				<Text>You have {customerPoints} points!</Text>
+			)}
+			{isLoggedIn && (
+				<>
+					{isLoading && (
+						<BlockStack spacing="loose">
+							<Banner title="Checkout Rewards">
+								<Text>Loading rewards...</Text>
+							</Banner>
+						</BlockStack>
+					)}
 
-				{discounts?.canUpdateDiscountCodes ? (
-					<Checkbox
-						checked={hasAddedDiscountCode}
-						onChange={handleCheckboxChange}
-						disabled={!checkboxEnabled}
-					>
-						{checkboxEnabled && (
-							<Text>
-								{`Redeem ${pointsRequiredMetafields[0]?.metafield?.value} points for a ${percentageValueMetafields[0]?.metafield?.value}% discount?`}
-							</Text>
-						)}
-						{!checkboxEnabled && (
-							<Text>
-								{`Next reward available at ${pointsRequiredMetafields[0]?.metafield?.value} points`}
-							</Text>
-						)}
-					</Checkbox>
-				) : (
-					<Banner status="warning">
-						Checkout Rewards discounts are unavailable
-					</Banner>
-				)}
-			</BlockStack>
+					{!isLoading && (
+						// renders for logged in customers
+						<BlockStack spacing="loose">
+							<BlockStack border="dotted" padding="tight">
+								<Banner title="Checkout Rewards">
+									<Text>{welcomeMessage}</Text>
+								</Banner>
+								<Text>You have {customerPoints} points!</Text>
+
+								{discounts?.canUpdateDiscountCodes ? (
+									<Checkbox
+										checked={hasAddedDiscountCode}
+										onChange={handleCheckboxChange}
+										disabled={!checkboxEnabled}
+									>
+										{checkboxEnabled && (
+											<Text>
+												{`Redeem ${pointsRequiredMetafields[0]?.metafield?.value} points for a ${percentageValueMetafields[0]?.metafield?.value}% discount?`}
+											</Text>
+										)}
+										{!checkboxEnabled && (
+											<Text>
+												{`Next reward available at ${pointsRequiredMetafields[0]?.metafield?.value} points`}
+											</Text>
+										)}
+									</Checkbox>
+								) : (
+									<Banner status="warning">
+										Checkout Rewards discounts are unavailable
+									</Banner>
+								)}
+							</BlockStack>
+						</BlockStack>
+					)}
+				</>
+			)}
 		</BlockStack>
+	);
+}
+
+function ThankYouExtension() {
+	console.log("ThankYouExtension: Component rendering started.");
+
+	const customer = useCustomer();
+	const isLoggedIn = !!customer;
+
+	const [isLoading, setIsLoading] = useState(true);
+	const [customerPoints, setCustomerPoints] = useState(0);
+
+	let pointsMetafields;
+
+	useEffect(() => {
+		if (!isLoggedIn) {
+			setIsLoading(false);
+			return;
+		}
+
+		const waitForUpdatedMetafield = setTimeout(() => {
+			pointsMetafields = useAppMetafields({
+				type: "customer",
+				namespace: "rewards",
+				key: "points",
+			});
+			console.log(
+				"ThankYouExtension: useEffect - pointsMetafields fetched:",
+				pointsMetafields
+			);
+
+			if (pointsMetafields && pointsMetafields.length > 0 && customer?.id) {
+				const pointsMetafieldValue = pointsMetafields.find(
+					({ target }) =>
+						target && `gid://shopify/Customer/${target.id}` === customer.id
+				);
+
+				if (pointsMetafieldValue?.metafield?.value) {
+					const points = parseInt(pointsMetafieldValue.metafield.value) || 0;
+					setCustomerPoints(points);
+				}
+			}
+
+			setIsLoading(false);
+		}, 3000);
+
+		// Cleanup
+		return () => {
+			clearTimeout(waitForUpdatedMetafield);
+		};
+	}, [customer, pointsMetafields, isLoggedIn]);
+
+	if (!isLoggedIn) {
+		return null;
+	}
+
+	let customerTitle = customer?.firstName || customer?.email || "!";
+	// add a space if there is a name or email
+	customerTitle = customerTitle.length > 1 ? " " + customerTitle : customerTitle;
+
+	return (
+		<>
+			{isLoading && (
+				<Banner title="Checkout Rewards">
+					<Text>Loading your rewards...</Text>
+				</Banner>
+			)}
+			<BlockStack spacing="loose" border="dotted" padding="base">
+				<Banner title="Checkout Rewards" status="success">
+					<Text>
+						{"Thanks for shopping with us"},{customerTitle}
+					</Text>
+				</Banner>
+				<InlineLayout spacing="loose" columns={["fill", "auto"]}>
+					<Text>Your current reward points balance:</Text>
+					<Text emphasis="bold" size="medium">
+						{customerPoints} points
+					</Text>
+				</InlineLayout>
+				<Divider />
+				<Text size="small">Thanks for shopping with us!</Text>
+			</BlockStack>
+		</>
 	);
 }

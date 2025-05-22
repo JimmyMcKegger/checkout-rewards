@@ -6,6 +6,7 @@ import {   Page,
   DatePicker,
   Button,
   Banner,
+  Popover,
   Layout,
   BlockStack } from "@shopify/polaris";
 import { useNavigate } from "@remix-run/react";
@@ -37,6 +38,19 @@ export default function Discounts() {
       year: today.getFullYear(),
     };
   });
+
+  const [startDatePopoverActive, setStartDatePopoverActive] = useState(false);
+  const [endDatePopoverActive, setEndDatePopoverActive] = useState(false);
+
+  const toggleStartDatePopoverActive = useCallback(
+    () => setStartDatePopoverActive((active) => !active),
+    [],
+  );
+
+  const toggleEndDatePopoverActive = useCallback(
+    () => setEndDatePopoverActive((active) => !active),
+    [],
+  );
 
   const [{ data, fetching, error: apiError }, createAppDiscountCode] =
     useGlobalAction(api.createDiscountCode);
@@ -131,31 +145,71 @@ export default function Discounts() {
                   onChange={setPointsRequired}
                   type="number"
                   autoComplete="off"
-                  helpText="Points needed to redeem this discount"
+                  helpText="Number of points customer needs to redeem for this discount"
                   error={fieldErrors.pointsRequired}
                 />
 
                 <FormLayout.Group>
                   <div>
                     <Text variant="bodyMd" as="p">Start Date</Text>
-                    <DatePicker
-                      month={startMonth}
-                      year={startYear}
-                      onChange={dates => setStartDate(dates.start)}
-                      onMonthChange={(month, year) => setStartMonthYear({ month, year })}
-                      selected={startDate ? {start: startDate, end: startDate} : undefined}
-                    />
+                    <Popover
+                      active={startDatePopoverActive}
+                      activator={
+                        <TextField
+                          label="Start Date"
+                          labelHidden
+                          value={startDate ? startDate.toLocaleDateString() : ""}
+                          onFocus={toggleStartDatePopoverActive}
+                          autoComplete="off"
+                        />
+                      }
+                      autofocusTarget="none"
+                      onClose={toggleStartDatePopoverActive}
+                    >
+                      <Popover.Pane>
+                        <DatePicker
+                          month={startMonth}
+                          year={startYear}
+                          onChange={({start}) => {
+                            setStartDate(start);
+                            toggleStartDatePopoverActive();
+                          }}
+                          onMonthChange={(month, year) => setStartMonthYear({ month, year })}
+                          selected={startDate ? {start: startDate, end: startDate} : undefined}
+                        />
+                      </Popover.Pane>
+                    </Popover>
                   </div>
 
                   <div>
                     <Text variant="bodyMd" as="p">End Date (Optional)</Text>
-                    <DatePicker
-                      month={endMonth}
-                      year={endYear}
-                      onChange={dates => setEndDate(dates.start)}
-                      onMonthChange={(month, year) => setEndMonthYear({ month, year })}
-                      selected={endDate ? {start: endDate, end: endDate} : undefined}
-                    />
+                    <Popover
+                      active={endDatePopoverActive}
+                      activator={
+                        <TextField
+                          label="End Date"
+                          labelHidden
+                          value={endDate ? endDate.toLocaleDateString() : ""}
+                          onFocus={toggleEndDatePopoverActive}
+                          autoComplete="off"
+                        />
+                      }
+                      autofocusTarget="none"
+                      onClose={toggleEndDatePopoverActive}
+                    >
+                      <Popover.Pane>
+                        <DatePicker
+                          month={endMonth}
+                          year={endYear}
+                          onChange={({start}) => {
+                            setEndDate(start);
+                            toggleEndDatePopoverActive();
+                          }}
+                          onMonthChange={(month, year) => setEndMonthYear({ month, year })}
+                          selected={endDate ? {start: endDate, end: endDate} : undefined}
+                        />
+                      </Popover.Pane>
+                    </Popover>
                   </div>
                 </FormLayout.Group>
 

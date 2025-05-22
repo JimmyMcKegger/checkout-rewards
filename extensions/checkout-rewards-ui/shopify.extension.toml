@@ -16,8 +16,14 @@ type = "ui_extension"
 # https://shopify.dev/docs/api/checkout-ui-extensions/unstable/extension-targets-overview
 
 [[extensions.targeting]]
-module = "./src/Checkout.jsx"
 target = "purchase.checkout.reductions.render-after"
+module = "./src/Checkout.jsx"
+export = "checkoutRender"
+
+[[extensions.targeting]]
+target = "purchase.thank-you.customer-information.render-after"
+module = "./src/Checkout.jsx"
+export = "thankYouRender"
 
 [extensions.capabilities]
 # Gives your extension access to directly query Shopify’s storefront API.

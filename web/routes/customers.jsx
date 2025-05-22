@@ -16,20 +16,30 @@ export default function Customers() {
 		>
 			<Layout>
 				<Layout.Section>
-					<Banner tone="success">
-						<Text variant="bodyMd" as="p">
-							Successfully connected your Gadget app to Shopify
-						</Text>
-					</Banner>
-				</Layout.Section>
-
-				<Layout.Section>
-					<Card padding="0">
+					<Card background="bg-surface-secondary" padding="0">
 						{/* use Autocomponents to build UI quickly: https://docs.gadget.dev/guides/frontend/autocomponents  */}
 						<AutoTable
 							model={api.shopifyCustomer}
-							columns={["id", "firstName", "lastName", "email", "points"]}
-						/>
+							onClick={(row) => console.log(row)}
+							columns={[
+								{
+									header: "Customer name",
+									render: ({ record }) => {
+										return (
+											<div>
+												{record?.firstName?.[0]?.toUpperCase() +
+													". " +
+													record?.lastName}
+											</div>
+										);
+									},
+								},
+								"email",
+								"points",
+							]}
+							sortBy="updatedAt"
+							sortDirection="desc"
+							live />
 					</Card>
 				</Layout.Section>
 			</Layout>

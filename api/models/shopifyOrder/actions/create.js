@@ -42,19 +42,19 @@ export const onSuccess = async ({
     },
   });
 
-  logger.info(`shopData: ${JSON.stringify(shopData)}`);
+  //logger.info(`shopData: ${JSON.stringify(shopData)}`);
 
   // get the points to reward
   const pointsToReward = shopData?.checkoutRewardsPointsRewarded || 1;
-  logger.info(`pointsToReward: ${pointsToReward}`);
+  //logger.info(`pointsToReward: ${pointsToReward}`);
 
   // get the currency value to reward
   const currencyValueToReward = shopData?.checkoutRewardsCurrencyValue || 1;
-  logger.info(`currencyValueToReward: ${currencyValueToReward}`);
+  //logger.info(`currencyValueToReward: ${currencyValueToReward}`);
 
   // validate the discount code
   const discountCode = shopData?.checkoutRewardsDiscountCode.toUpperCase();
-  logger.info(`discountCode: ${discountCode}`);
+  //logger.info(`discountCode: ${discountCode}`);
 
   const customer = await api.shopifyCustomer.findOne(record.customer, {
     select: {
@@ -62,23 +62,23 @@ export const onSuccess = async ({
       points: true,
     },
   });
-  logger.info(`CUSTOMRE: ${JSON.stringify(customer)}`);
+  //logger.info(`CUSTOMRE: ${JSON.stringify(customer)}`);
 
   const currentPoints = customer?.points || 0;
-  logger.info(`currentPoints: ${currentPoints}`);
+  //logger.info(`currentPoints: ${currentPoints}`);
 
   const ordeDiscountCodes =
     record.discountCodes?.map((code) => code.code) || [];
-  logger.info(`ordeDiscountCodes: ${JSON.stringify(ordeDiscountCodes)}`);
+  //logger.info(`ordeDiscountCodes: ${JSON.stringify(ordeDiscountCodes)}`);
 
   const appDiscoutnUsed = ordeDiscountCodes.find(
     (code) => code === discountCode
   );
-  logger.info(`appDiscoutnUsed: ${appDiscoutnUsed}`);
+  //logger.info(`appDiscoutnUsed: ${appDiscoutnUsed}`);
 
   // get the points required to use the discount code
   const pointsRequired = shopData?.checkoutRewardsPointsRequired;
-  logger.info(`pointsRequired: ${pointsRequired}`);
+  //logger.info(`pointsRequired: ${pointsRequired}`);
 
   // check if the discount code is used
   if (appDiscoutnUsed) {
@@ -87,18 +87,18 @@ export const onSuccess = async ({
 
   // add points to the customer based on order total
   const orderTotal = parseInt(record?.totalPrice);
-  logger.info(`orderTotal: ${orderTotal}`);
+  //logger.info(`orderTotal: ${orderTotal}`);
 
   pointsToAdd += parseInt(orderTotal / currencyValueToReward);
 
-  logger.info(`pointsToAdd: ${pointsToAdd}`);
-  logger.info(`pointsToSubtract: ${pointsToSubtract}`);
+  //logger.info(`pointsToAdd: ${pointsToAdd}`);
+  //logger.info(`pointsToSubtract: ${pointsToSubtract}`);
 
   const finalPoints = currentPoints + pointsToAdd - pointsToSubtract;
-  logger.info(`finalPoints: ${finalPoints}`);
+  //logger.info(`finalPoints: ${finalPoints}`);
 
 
-  // set the points back to teh shopify customer metafield
+  // set the points back to the shopify customer metafield
   try {
     const response = await connections.shopify.current?.graphql(
       `mutation setMetafield($metafields: [MetafieldsSetInput!]!) {
