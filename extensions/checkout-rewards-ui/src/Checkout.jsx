@@ -12,32 +12,28 @@ import {
 	useInstructions,
 	useApplyDiscountCodeChange,
 	useCartLines,
-	Heading,
-	Image,
-	Button,
 	Divider,
 	InlineLayout,
 } from "@shopify/ui-extensions-react/checkout";
 
-// const target = "purchase.checkout.reductions.render-after";
-// export default reactExtension(target, () => <Extension />);
+// This file hosts both teh Checkout and Thank you pages
 
-// Checkotu page configuration
+// Checkout page
 const checkoutRender = reactExtension(
 	"purchase.checkout.reductions.render-after",
 	() => <CheckoutExtension />
 );
 export { checkoutRender };
 
-// Thank you page configuration
+// Thank you page
 const thankYouRender = reactExtension(
 	"purchase.thank-you.customer-information.render-after",
 	() => <ThankYouExtension />
 );
 export { thankYouRender };
 
+// CHECKOUT PAGE
 function CheckoutExtension() {
-	// CHECKOUT PAGE
 	const translate = useTranslate();
 	const { query } = useApi();
 	const customer = useCustomer();
@@ -187,16 +183,19 @@ function CheckoutExtension() {
 	);
 }
 
+// THANK YOU PAGE
 function ThankYouExtension() {
-	console.log("ThankYouExtension: Component rendering started.");
-
 	const customer = useCustomer();
 	const isLoggedIn = !!customer;
 
 	const [isLoading, setIsLoading] = useState(true);
 	const [customerPoints, setCustomerPoints] = useState(0);
 
-	let pointsMetafields;
+	const appMetafields = useAppMetafields({
+		type: "customer",
+		namespace: "rewards",
+		key: "points",
+	});
 
 	useEffect(() => {
 		if (!isLoggedIn) {
@@ -204,45 +203,38 @@ function ThankYouExtension() {
 			return;
 		}
 
-		const waitForUpdatedMetafield = setTimeout(() => {
-			pointsMetafields = useAppMetafields({
-				type: "customer",
-				namespace: "rewards",
-				key: "points",
-			});
-			console.log(
-				"ThankYouExtension: useEffect - pointsMetafields fetched:",
-				pointsMetafields
+		if (appMetafields && appMetafields.length > 0 && customer?.id) {
+			const pointsMetafieldValue = appMetafields.find(
+				({ target }) =>
+					target && `gid://shopify/Customer/${target.id}` === customer.id
 			);
 
-			if (pointsMetafields && pointsMetafields.length > 0 && customer?.id) {
-				const pointsMetafieldValue = pointsMetafields.find(
-					({ target }) =>
-						target && `gid://shopify/Customer/${target.id}` === customer.id
-				);
-
-				if (pointsMetafieldValue?.metafield?.value) {
-					const points = parseInt(pointsMetafieldValue.metafield.value) || 0;
-					setCustomerPoints(points);
-				}
+			if (pointsMetafieldValue?.metafield?.value) {
+				const points = parseInt(pointsMetafieldValue.metafield.value) || 0;
+				setCustomerPoints(points);
+			} else {
+				setCustomerPoints(0);
 			}
-
 			setIsLoading(false);
-		}, 3000);
+		} else if (appMetafields) {
+			setCustomerPoints(0);
+			setIsLoading(false);
+		}
+	}, [customer, isLoggedIn, appMetafields]);
 
-		// Cleanup
-		return () => {
-			clearTimeout(waitForUpdatedMetafield);
-		};
-	}, [customer, pointsMetafields, isLoggedIn]);
-
-	if (!isLoggedIn) {
-		return null;
+	if (!isLoggedIn && !isLoading) {
+		return (
+			<>
+				<Banner title="Checkout Rewards" status="info">
+					<Text>Log in to see your rewards</Text>
+				</Banner>
+			</>
+		);
 	}
 
 	let customerTitle = customer?.firstName || customer?.email || "!";
-	// add a space if there is a name or email
-	customerTitle = customerTitle.length > 1 ? " " + customerTitle : customerTitle;
+	customerTitle =
+		customerTitle.length > 1 ? " " + customerTitle : customerTitle;
 
 	return (
 		<>
@@ -251,21 +243,21 @@ function ThankYouExtension() {
 					<Text>Loading your rewards...</Text>
 				</Banner>
 			)}
-			<BlockStack spacing="loose" border="dotted" padding="base">
-				<Banner title="Checkout Rewards" status="success">
-					<Text>
-						{"Thanks for shopping with us"},{customerTitle}
-					</Text>
-				</Banner>
-				<InlineLayout spacing="loose" columns={["fill", "auto"]}>
-					<Text>Your current reward points balance:</Text>
-					<Text emphasis="bold" size="medium">
-						{customerPoints} points
-					</Text>
-				</InlineLayout>
-				<Divider />
-				<Text size="small">Thanks for shopping with us!</Text>
-			</BlockStack>
+			{!isLoading && (
+				<BlockStack spacing="loose" border="dotted" padding="base">
+					<Banner title="Checkout Rewards" status="success">
+						<Text>
+							{"Thanks for shopping with us"},{customerTitle}
+						</Text>
+					</Banner>
+					<InlineLayout spacing="loose" columns={["fill", "auto"]}>
+						<Text>Your current reward points balance:</Text>
+						<Text emphasis="bold" size="medium">
+							{customerPoints} points
+						</Text>
+					</InlineLayout>
+				</BlockStack>
+			)}
 		</>
 	);
 }

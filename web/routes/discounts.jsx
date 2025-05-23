@@ -175,7 +175,7 @@ export default function Discounts() {
                             toggleStartDatePopoverActive();
                           }}
                           onMonthChange={(month, year) => setStartMonthYear({ month, year })}
-                          selected={startDate ? {start: startDate, end: startDate} : undefined}
+                          selected={startDate ? {start: startDate, end: startDate} : null}
                         />
                       </Popover.Pane>
                     </Popover>
@@ -192,6 +192,7 @@ export default function Discounts() {
                           value={endDate ? endDate.toLocaleDateString() : ""}
                           onFocus={toggleEndDatePopoverActive}
                           autoComplete="off"
+                          placeholder="No Expiry Date"
                         />
                       }
                       autofocusTarget="none"

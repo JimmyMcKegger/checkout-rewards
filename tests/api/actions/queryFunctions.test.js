@@ -27,6 +27,4 @@ describe("queryFunctions", () => {
 
 		expect(result).toBe(mockFunctionId);
 	});
-
-
 });
