@@ -53,9 +53,9 @@ export default function Index() {
 					// create it if it doesn't exist
 					console.log("No rewards.points definition found");
 					try {
-						const result = await createCustomerPointsMetafield();
-						setMetafieldResult(result);
-						console.log("Created metafield:", result);
+						const createResult = await createCustomerPointsMetafield();
+						setMetafieldResult(createResult);
+						console.log("Created metafield:", createResult);
 					} catch (createError) {
 						console.error("Error creating metafield:", createError);
 					}
@@ -91,11 +91,13 @@ export default function Index() {
 							</Text>
 							<Divider />
 							<Text variant="bodyMd" as="p">
-								To get started, please configure the number of{" "}
+								To get started, please create a{" "}
+								<Link onClick={() => navigate("/discounts")}>discount</Link>{" "}
+								and configure how many{" "}
 								<Link onClick={() => navigate("/reward-points")}>
 									reward points
 								</Link>{" "}
-								awarded for each euro spent.
+								are awarded for each euro spent.
 							</Text>
 						</Box>
 					</Card>

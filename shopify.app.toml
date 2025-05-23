@@ -1,3 +1,17 @@
-# This toml file is used for production. Only edit this file if you have a need for it
-# When you add a production config, values will be auto-populated here
-# Read more at https://docs.gadget.dev/guides/plugins/shopify/advanced-topics/shopify-app-toml
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "bc3e7331136baf277375677cb980e0e6"
+name = "checkout-rewards-app"
+application_url = "https://checkout-rewards-app.gadget.app/api/shopify/install-or-render"
+embedded = true
+
+[build]
+include_config_on_deploy = true
+
+[auth]
+redirect_urls = [
+  "https://checkout-rewards-app.gadget.app/api/connections/auth/shopify/callback"
+]
+
+[webhooks]
+api_version = "2025-04"
