@@ -10,7 +10,13 @@ import {
 	Link,
 	Page,
 	Text,
+	Collapsible,
+	Button,
+	InlineStack,
+	Icon,
+	BlockStack,
 } from "@shopify/polaris";
+import { ChevronDownIcon, ChevronUpIcon } from "@shopify/polaris-icons";
 import { api } from "../api";
 
 export default function Index() {
@@ -19,6 +25,13 @@ export default function Index() {
 	const [storeMetafildDefinition, setStoreMetafildDefinition] = useState("");
 	const [metafieldResult, setMetafieldResult] = useState(null);
 	const [showBanner, setShowBanner] = useState(true);
+
+	// Collapsible states for instruction cards
+	const [rewardPointsOpen, setRewardPointsOpen] = useState(false);
+	const [discountsOpen, setDiscountsOpen] = useState(false);
+	const [customersOpen, setCustomersOpen] = useState(false);
+	const [overviewOpen, setOverviewOpen] = useState(false);
+	const [quickSetupOpen, setQuickSetupOpen] = useState(false);
 
 	const [
 		{ data: createData, fetching: createFetching, error: createError },
@@ -71,7 +84,7 @@ export default function Index() {
 	const navigate = useNavigate();
 
 	return (
-		<Page title="App">
+		<Page title="Checkout Rewards App">
 			<Layout>
 				<Layout.Section>
 					{showBanner && (
@@ -84,22 +97,315 @@ export default function Index() {
 				</Layout.Section>
 
 				<Layout.Section>
-					<Card padding="10">
-						<Box padding="400">
-							<Text variant="bodyMd" as="p">
+					<Card>
+						<BlockStack gap="400">
+							<Text variant="headingLg" as="h2">
 								Welcome to the Checkout Rewards App
 							</Text>
-							<Divider />
 							<Text variant="bodyMd" as="p">
-								To get started, please create a{" "}
-								<Link onClick={() => navigate("/discounts")}>discount</Link>{" "}
-								and configure how many{" "}
-								<Link onClick={() => navigate("/reward-points")}>
-									reward points
-								</Link>{" "}
-								are awarded for each euro spent.
+								This app allows you to reward customers with points for
+								purchases and let them redeem those points for discounts at
+								checkout.
 							</Text>
-						</Box>
+						</BlockStack>
+					</Card>
+				</Layout.Section>
+
+				{/* App Overview Card */}
+				<Layout.Section>
+					<Card>
+						<BlockStack gap="400">
+							<InlineStack align="space-between">
+								<Text variant="headingMd" as="h3">
+									📋 How the App Works
+								</Text>
+								<Button
+									plain
+									onClick={() => setOverviewOpen(!overviewOpen)}
+									icon={overviewOpen ? ChevronUpIcon : ChevronDownIcon}
+								/>
+							</InlineStack>
+							<Collapsible
+								open={overviewOpen}
+								id="overview-collapsible"
+								transition={{
+									duration: "200ms",
+									timingFunction: "ease-in-out",
+								}}
+							>
+								<BlockStack gap="300">
+									<Divider />
+									<Text variant="bodyMd" as="p">
+										<strong>Customer Experience:</strong>
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• Customers earn points automatically when they make
+										purchases
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• At checkout, logged-in customers can see their point
+										balance
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• If they have enough points, they can redeem them for a
+										discount
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• After purchase, customers see their updated point balance
+										on the thank you page
+									</Text>
+								</BlockStack>
+							</Collapsible>
+						</BlockStack>
+					</Card>
+				</Layout.Section>
+
+				{/* Quick Setup Guide */}
+				<Layout.Section>
+					<Card>
+						<BlockStack gap="400">
+							<InlineStack align="space-between">
+								<Text variant="headingMd" as="h3">
+									🚀 Quick Setup Guide
+								</Text>
+								<Button
+									plain
+									onClick={() => setQuickSetupOpen(!quickSetupOpen)}
+									icon={quickSetupOpen ? ChevronUpIcon : ChevronDownIcon}
+								/>
+							</InlineStack>
+							<Collapsible
+								open={quickSetupOpen}
+								id="quick-setup-collapsible"
+								transition={{
+									duration: "200ms",
+									timingFunction: "ease-in-out",
+								}}
+							>
+								<BlockStack gap="300">
+									<Divider />
+									<Text variant="bodyMd" as="p">
+										<strong>Recommended setup order:</strong>
+									</Text>
+									<Text variant="bodyMd" as="p">
+										1.{" "}
+										<Link onClick={() => navigate("/reward-points")}>
+											Configure reward points
+										</Link>{" "}
+										- Set your point earning rate
+									</Text>
+									<Text variant="bodyMd" as="p">
+										2.{" "}
+										<Link onClick={() => navigate("/discounts")}>
+											Create discount codes
+										</Link>{" "}
+										- Set up your first redemption offer
+									</Text>
+									<Text variant="bodyMd" as="p">
+										3. Test the checkout experience with a customer account
+									</Text>
+									<Text variant="bodyMd" as="p">
+										4. Use{" "}
+										<Link onClick={() => navigate("/customers")}>
+											customer management
+										</Link>{" "}
+										to monitor and adjust points as needed
+									</Text>
+								</BlockStack>
+							</Collapsible>
+						</BlockStack>
+					</Card>
+				</Layout.Section>
+
+				{/* Customer Management Card */}
+				<Layout.Section>
+					<Card>
+						<BlockStack gap="400">
+							<InlineStack align="space-between">
+								<Text variant="headingMd" as="h3">
+									👥 Customer Management
+								</Text>
+								<Button
+									plain
+									onClick={() => setCustomersOpen(!customersOpen)}
+									icon={customersOpen ? ChevronUpIcon : ChevronDownIcon}
+								/>
+							</InlineStack>
+							<Collapsible
+								open={customersOpen}
+								id="customers-collapsible"
+								transition={{
+									duration: "200ms",
+									timingFunction: "ease-in-out",
+								}}
+							>
+								<BlockStack gap="300">
+									<Divider />
+									<Text variant="bodyMd" as="p">
+										View and manually adjust customer reward point balances.
+									</Text>
+									<Text variant="bodyMd" as="p">
+										<strong>Features:</strong>
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• View all customers with their current point balances
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• Click on any point value to edit it directly
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• Add or remove points for returns or exchanges
+									</Text>
+
+									<Text variant="bodyMd" as="p">
+										<strong>Use cases:</strong>
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• Award bonus points for special promotions
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• Adjust points for returns or customer service issues
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• Manually award points for non-purchase activities
+									</Text>
+									<Box paddingBlockStart="300">
+										<Button
+											onClick={() => navigate("/customers")}
+											variant="primary"
+										>
+											Manage Customer Points
+										</Button>
+									</Box>
+								</BlockStack>
+							</Collapsible>
+						</BlockStack>
+					</Card>
+				</Layout.Section>
+
+				{/* Discounts Management Card */}
+				<Layout.Section>
+					<Card>
+						<BlockStack gap="400">
+							<InlineStack align="space-between">
+								<Text variant="headingMd" as="h3">
+									💸 Discount Management
+								</Text>
+								<Button
+									plain
+									onClick={() => setDiscountsOpen(!discountsOpen)}
+									icon={discountsOpen ? ChevronUpIcon : ChevronDownIcon}
+								/>
+							</InlineStack>
+							<Collapsible
+								open={discountsOpen}
+								id="discounts-collapsible"
+								transition={{
+									duration: "200ms",
+									timingFunction: "ease-in-out",
+								}}
+							>
+								<BlockStack gap="300">
+									<Divider />
+									<Text variant="bodyMd" as="p">
+										Create percentage-based discount codes that customers can
+										redeem with points.
+									</Text>
+									<Text variant="bodyMd" as="p">
+										<strong>How to create a discount:</strong>
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• Enter a descriptive title for your discount
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• Set a unique discount code (auto-generated but editable)
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• Choose the discount percentage (e.g., 10% off)
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• Set how many points are required to redeem this discount
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• Optionally set start and end dates for the promotion
+									</Text>
+									<Text variant="bodyMd" as="p">
+										<strong>Important:</strong> The discount code will be
+										automatically applied at checkout when customers redeem
+										their points.
+									</Text>
+									<Box paddingBlockStart="300">
+										<Button
+											onClick={() => navigate("/discounts")}
+											variant="primary"
+										>
+											Create Discount Code
+										</Button>
+									</Box>
+								</BlockStack>
+							</Collapsible>
+						</BlockStack>
+					</Card>
+				</Layout.Section>
+
+				{/* Reward Points Configuration Card */}
+				<Layout.Section>
+					<Card>
+						<BlockStack gap="400">
+							<InlineStack align="space-between">
+								<Text variant="headingMd" as="h3">
+									🏆 Reward Points Configuration
+								</Text>
+								<Button
+									plain
+									onClick={() => setRewardPointsOpen(!rewardPointsOpen)}
+									icon={rewardPointsOpen ? ChevronUpIcon : ChevronDownIcon}
+								/>
+							</InlineStack>
+							<Collapsible
+								open={rewardPointsOpen}
+								id="reward-points-collapsible"
+								transition={{
+									duration: "200ms",
+									timingFunction: "ease-in-out",
+								}}
+							>
+								<BlockStack gap="300">
+									<Divider />
+									<Text variant="bodyMd" as="p">
+										Set how many points customers earn per currency unit spent.
+									</Text>
+									<Text variant="bodyMd" as="p">
+										<strong>How to use:</strong>
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• Set the number of points customers will receive (e.g., 1
+										point)
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• Set the currency value that earns those points (e.g., for
+										every $1 spent)
+									</Text>
+									<Text variant="bodyMd" as="p">
+										• Example: "1 point per $1 spent" means a $50 purchase earns
+										50 points
+									</Text>
+									<Text variant="bodyMd" as="p">
+										Changes apply to all future purchases. The system
+										automatically awards points when customers complete their
+										orders.
+									</Text>
+									<Box paddingBlockStart="300">
+										<Button
+											onClick={() => navigate("/reward-points")}
+											variant="primary"
+										>
+											Configure Reward Points
+										</Button>
+									</Box>
+								</BlockStack>
+							</Collapsible>
+						</BlockStack>
 					</Card>
 				</Layout.Section>
 			</Layout>

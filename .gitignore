@@ -8,3 +8,4 @@ node_modules/
 extensions/*/dist
 extensions/*/node_modules
 *.env*
+.cursor/*

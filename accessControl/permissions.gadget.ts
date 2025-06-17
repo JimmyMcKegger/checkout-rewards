@@ -160,6 +160,7 @@ export const permissions: GadgetPermissions = {
         queryFunctions: true,
         queryMetafieldDefinitions: true,
         scheduledShopifySync: true,
+        updateCustomerPoints: true,
         writeToShopify: true,
       },
     },
