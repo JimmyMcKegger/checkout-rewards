@@ -40,6 +40,7 @@ export const onSuccess = async ({
 
 	// validate the discount code
 	const discountCode = shopData?.checkoutRewardsDiscountCode.toUpperCase();
+	// TODO: get customer from order record instead of using graphql
 	const query = `
   query getOrderCustomer($id: ID!) {
     order(id: $id) {
